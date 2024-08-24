@@ -1,0 +1,9 @@
+{
+    "server": {
+        "addr": "localhost:3003",
+        "logger": {
+            "destination": "stdout",
+            "level": "INFO"
+            }
+        }
+}
