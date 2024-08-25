@@ -1,7 +1,7 @@
 package label
 
 import (
-    "fmt"
+	"fmt"
 )
 
 type Label struct {
@@ -12,9 +12,9 @@ type Label struct {
 }
 
 func (l Label) Print(pType string) ([]byte, error) {
-    tplt, ok := l.Templates[pType]
-    if !ok {
-        return nil, fmt.Errorf("label has no template with type: %s", pType)
-    }
-    return tplt.Print(l.Placeholders)
+	tplt, ok := l.Templates[pType]
+	if !ok {
+		return nil, fmt.Errorf("label has no template with type: %s", pType)
+	}
+	return tplt.Print(l.Placeholders)
 }
