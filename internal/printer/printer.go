@@ -10,28 +10,29 @@ type Printable interface {
 }
 
 type Printer struct {
-	addr        string
-	pType       string
-	description string
+	ID          int64
+	Addr        string
+	Type        string
+	Comment     string
 	conn        net.Conn
 	isConnected bool
 }
 
-func New(pType, addr, descr string) Printer {
+func New(pType, addr, comment string) Printer {
 	return Printer{
-		addr:        addr,
-		pType:       pType,
-		description: descr,
+		Addr:    addr,
+		Type:    pType,
+		Comment: comment,
 	}
 }
 
 func (p *Printer) Connect() error {
-	conn, err := net.Dial("tcp", p.addr)
+	conn, err := net.Dial("tcp", p.Addr)
 	if err != nil {
 		return err
 	}
 	p.conn = conn
-    p.isConnected = true
+	p.isConnected = true
 	return nil
 }
 
@@ -44,7 +45,7 @@ func (p *Printer) Enqueue(label Printable) error {
 	if !p.isConnected {
 		return net.ErrClosed
 	}
-	bs, err := label.Print(p.pType)
+	bs, err := label.Print(p.Type)
 	if err != nil {
 		return err
 	}
