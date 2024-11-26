@@ -13,8 +13,9 @@ type Logger struct {
 
 // Server contains all configuration for server.
 type Server struct {
-	Addr   string `json:"addr"`
-	Logger Logger `json:"logger"`
+	Addr               string `json:"addr"`
+	Logger             Logger `json:"logger"`
+	GracefulTimeoutSec int    `json:"graceful_timeout_s"`
 }
 
 // Config is a high-level struct that contains all configuration.

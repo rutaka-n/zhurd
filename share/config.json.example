@@ -1,6 +1,7 @@
 {
     "server": {
         "addr": "localhost:3003",
+        "graceful_timeout_s": 5,
         "logger": {
             "destination": "stdout",
             "level": "INFO"
