@@ -1,6 +1,5 @@
 # ZHurd
-ZHurd - service for managing templates and task queue for zebra-compatible printers.
-
+ZHurd - service for managing templates and task queue for ZPL-compatible printers.
 
 ## building
 
