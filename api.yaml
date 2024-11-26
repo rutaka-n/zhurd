@@ -1,4 +1,4 @@
-openapi: "3.0.0"
+openapi: 3.0.0
 info:
   version: 1.0.0
   title: zhurd
@@ -7,7 +7,6 @@ info:
 servers:
   - url: http://localhost:3003/v1
 paths:
-
   /printers:
     get:
       summary: List all printers
@@ -15,84 +14,68 @@ paths:
       tags:
         - printers
       responses:
-        200:
+        '200':
           description: An paged array of printers
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Printers"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Printers'
     post:
       summary: Create a printer
       operationId: createPrinter
       tags:
         - printers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePrinter'
       responses:
-        201:
+        '201':
           description: created printer
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreatePrinter"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /printers/{printerId}:
+                $ref: '#/components/schemas/Printer'
+        '400':
+          description: Invalid request
+  /printers/{printerID}:
     get:
       summary: Info for a specific printer
-      operationId: showPrinterById
+      operationId: showPrinterByID
       tags:
         - printers
       parameters:
-        - name: printerId
+        - name: printerID
           in: path
           required: true
-          description: The id of the printer to retrieve
+          description: The ID of the printer to retrieve
           schema:
             type: string
       responses:
-        200:
+        '200':
           description: Expected response to a valid request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Printer"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Printer'
+        '404':
+          description: Not found
     delete:
       summary: delete a specific printer
-      operationId: deletePrinterById
+      operationId: deletePrinterByID
       tags:
         - printers
       parameters:
-        - name: printerId
+        - name: printerID
           in: path
           required: true
-          description: The id of the printer to delete
+          description: The ID of the printer to delete
           schema:
             type: string
       responses:
-        204:
+        '204':
           description: No content
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
   /labels:
     get:
       summary: List all labels
@@ -100,195 +83,192 @@ paths:
       tags:
         - labels
       responses:
-        200:
+        '200':
           description: An paged array of lables
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Labels"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Labels'
     post:
       summary: Create a label
       operationId: createLabel
       tags:
         - labels
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLabel'
       responses:
-        201:
+        '201':
           description: created label
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateLabel"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /labels/{labelId}:
+                $ref: '#/components/schemas/Label'
+        '400':
+          description: Invalid request
+  /labels/{labelID}:
     get:
       summary: Info for a specific label
-      operationId: showLabelById
+      operationId: showLabelByID
       tags:
         - labels
       parameters:
-        - name: labelId
+        - name: labelID
           in: path
           required: true
-          description: The id of the label to retrieve
+          description: The ID of the label to retrieve
           schema:
             type: string
       responses:
-        200:
+        '200':
           description: Expected response to a valid request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Label"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Label'
+        '404':
+          description: Not found
     delete:
       summary: delete a specific label
-      operationId: deleteLabelById
+      operationId: deleteLabelByID
       tags:
         - labels
       parameters:
-        - name: labelId
+        - name: labelID
           in: path
           required: true
-          description: The id of the label to delete
+          description: The ID of the label to delete
           schema:
             type: string
       responses:
-        204:
+        '204':
           description: No content
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /labels/{labelId}/templates:
+  /labels/{labelID}/enqueue:
+    post:
+      summary: Enqueue lable to print
+      operationId: enqueueLabelToPrint
+      tags:
+        - labels
+      parameters:
+        - name: labelID
+          in: path
+          required: true
+          description: The ID of the label to enqueue
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnqueueLable'
+      responses:
+        '204':
+          description: No content
+        '400':
+          description: Request error
+        '404':
+          description: Not found
+  /labels/{labelID}/templates:
     get:
       summary: List all tamplates
       operationId: listTemplates
       tags:
         - templates
       parameters:
-        - name: labelId
+        - name: labelID
           in: path
           required: true
-          description: The id of the label
+          description: The ID of the label
           schema:
             type: string
       responses:
-        200:
+        '200':
           description: An paged array of templates
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Templates"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Templates'
+        '404':
+          description: Not found
     post:
       summary: Create a template
       operationId: createTemplate
       tags:
         - templates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTemplate'
       parameters:
-        - name: labelId
+        - name: labelID
           in: path
           required: true
-          description: The id of the label
+          description: The ID of the label
           schema:
             type: string
       responses:
-        201:
+        '201':
           description: created template
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateTemplate"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /labels/{labelId}/templates/{templateId}:
+                $ref: '#/components/schemas/Template'
+        '400':
+          description: Invalid request
+        '404':
+          description: Not found
+  /labels/{labelID}/templates/{templateID}:
     get:
       summary: Info for a specific template
-      operationId: showTemplateById
+      operationId: showTemplateByID
       tags:
         - templates
       parameters:
-        - name: labelId
+        - name: labelID
           in: path
           required: true
-          description: The id of the label
+          description: The ID of the label
           schema:
             type: string
-        - name: templateId
+        - name: templateID
           in: path
           required: true
-          description: The id of the template to retrieve
+          description: The ID of the template to retrieve
           schema:
             type: string
       responses:
-        200:
+        '200':
           description: Expected response to a valid request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Template"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Template'
+        '404':
+          description: Not found
     delete:
       summary: delete a specific template
-      operationId: deleteTemplateById
+      operationId: deleteTemplateByID
       tags:
         - templates
       parameters:
-        - name: labelId
+        - name: labelID
           in: path
           required: true
-          description: The id of the label
+          description: The ID of the label
           schema:
             type: string
-        - name: templateId
+        - name: templateID
           in: path
           required: true
-          description: The id of the template to delete
+          description: The ID of the template to delete
           schema:
             type: string
       responses:
-        204:
+        '204':
           description: No content
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
 components:
   schemas:
     CreatePrinter:
@@ -298,10 +278,10 @@ components:
       properties:
         addr:
           type: string
-          example: "192.168.0.1:7777"
+          example: 192.168.0.1:7777
         type:
           type: string
-          example: "ZPL"
+          example: ZPL
         comment:
           type: string
     Printer:
@@ -313,25 +293,26 @@ components:
         id:
           type: integer
           format: int64
+          example: 1
         addr:
           type: string
-          example: "192.168.0.1:7777"
+          example: 192.168.0.1:7777
         type:
           type: string
-          example: "ZPL"
+          example: ZPL
         comment:
           type: string
     Printers:
       type: array
       items:
-        $ref: "#/components/schemas/Printer"
+        $ref: '#/components/schemas/Printer'
     CreateLabel:
       required:
         - name
       properties:
         name:
           type: string
-          example: "label1"
+          example: label1
         comment:
           type: string
     Label:
@@ -342,15 +323,44 @@ components:
         id:
           type: integer
           format: int64
+          example: 1
         name:
           type: string
-          example: "label1"
+          example: label1
         comment:
           type: string
     Labels:
       type: array
       items:
-        $ref: "#/components/schemas/Label"
+        $ref: '#/components/schemas/Label'
+    EnqueueLable:
+      required:
+        - printerID
+      properties:
+        printerID:
+          type: integer
+          format: int64
+          description: ID of printer to print label
+          example: 1
+        quantity:
+          type: integer
+          example: 3
+          default: 1
+        placeholders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Placeholder'
+    Placeholder:
+      required:
+        - name
+        - value
+      properties:
+        name:
+          type: string
+          example: "_comment1_"
+        value:
+          type: string
+          example: "Top section with company logo, name and address."
     CreateTemplate:
       required:
         - type
@@ -358,7 +368,7 @@ components:
       properties:
         type:
           type: string
-          example: "ZPL"
+          example: ZPL
         body:
           type: string
     Template:
@@ -370,23 +380,52 @@ components:
         id:
           type: integer
           format: int64
+          example: 1
         type:
           type: string
-          example: "ZPL"
+          example: ZPL
         body:
           type: string
+          example: |
+            ^XA
+            ^FX _comment1_
+            ^CF_font1_
+            ^FO_indentation_left_top1_^GC_circle_^FS
+            ^FO_indentation_left_top2_^GC_circle_^FS
+            ^FO_indentation_left_top3_^GC_circle_^FS
+            ^FO_indentation_left_top4_^GC_circle_^FS
+            ^FO_indentation_left_top5_^GC_circle_^FS
+            ^FO_indentation_left_top6_^FD_company_data1_^FS
+            ^CF_font2_
+            ^FO_indentation_left_top7_^FD_company_data2_^FS
+            ^FO_indentation_left_top8_^FD_company_data3_^FS
+            ^FO_indentation_left_top9_^FD_company_data4_^FS
+            ^FO_indentation_left_top10_^GB_rectangle1_^FS
+            ^FX _comment2_
+            ^CF_font3_
+            ^FO_indentation_left_top11_^FD_data5_^FS
+            ^FO_indentation_left_top12_^FD_data6_^FS
+            ^FO_indentation_left_top13_^FD_data7_^FS
+            ^CF_font4_
+            ^FO_indentation_left_top14_^GB_rectangle2_^FS
+            ^FX _comment3_
+            ^BY_band_
+            ^FO_indentation_left_top15_^BC^FD1234567890^FS
+            ^FX Fourth section (the two boxes on the bottom).
+            ^FO_indentation_left_top16_^GB_rectangle3_^FS
+            ^FO_indentation_left_top17_^GB_rectangle4_^FS
+            ^CF_font5_
+            ^FO_indentation_left_top18_^FD_data8_^FS
+            ^FO_indentation_left_top19_^FD_data9_^FS
+            ^FO_indentation_left_top20_^FD_data10_^FS
+            ^CF_font6_
+            ^FO_indentation_left_top21_^FD_data11_^FS
+            ^XZ
     Templates:
       type: array
       items:
-        $ref: "#/components/schemas/Template"
-    Error:
-      required:
-        - code
-        - message
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-
+        $ref: '#/components/schemas/Template'
+tags:
+  - name: printers
+  - name: labels
+  - name: templates
