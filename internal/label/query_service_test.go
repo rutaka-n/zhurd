@@ -2,10 +2,11 @@ package label
 
 import (
 	"errors"
+	"slices"
 	"testing"
 )
 
-func TestGet(t *testing.T) {
+func TestGetLabel(t *testing.T) {
 	repo, err := NewMemory()
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
@@ -22,26 +23,26 @@ func TestGet(t *testing.T) {
 
 	ucs := []struct {
 		desc        string
-		labelID   int64
-		label     *Label
+		labelID     int64
+		label       *Label
 		expectedErr error
 	}{
 		{
 			desc:        "happy path",
-			labelID:   label.ID,
-			label:     label,
+			labelID:     label.ID,
+			label:       label,
 			expectedErr: nil,
 		},
 		{
 			desc:        "wrong ID",
-			labelID:   -1,
-			label:     nil,
+			labelID:     -1,
+			label:       nil,
 			expectedErr: ErrNotFound,
 		},
 		{
 			desc:        "label with ID does not exist",
-			labelID:   2,
-			label:     nil,
+			labelID:     2,
+			label:       nil,
 			expectedErr: ErrNotFound,
 		},
 	}
@@ -67,7 +68,7 @@ func TestGet(t *testing.T) {
 	}
 }
 
-func TestList(t *testing.T) {
+func TestListLabel(t *testing.T) {
 	repo, err := NewMemory()
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
@@ -108,5 +109,126 @@ func TestList(t *testing.T) {
 	}
 	if len(result) != len(labels) {
 		t.Fatalf("expected result has same length as stored labels: %d, but got %d\n", len(labels), len(result))
+	}
+}
+
+func TestGetTemplate(t *testing.T) {
+	repo, err := NewMemory()
+	if err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+
+	template := &Template{
+		Type: "ZPL-II",
+		Body: []byte(`^XA
+^FX Third section with bar code.
+^BY5,2,270
+^FO100,550^BC^FD12345678^FS
+^XZ
+`),
+	}
+	err = repo.StoreTemplate(template)
+	if err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+
+	ucs := []struct {
+		desc        string
+		templateID  int64
+		template    *Template
+		expectedErr error
+	}{
+		{
+			desc:        "happy path",
+			templateID:  template.ID,
+			template:    template,
+			expectedErr: nil,
+		},
+		{
+			desc:        "wrong ID",
+			templateID:  -1,
+			template:    nil,
+			expectedErr: ErrNotFound,
+		},
+		{
+			desc:        "template with ID does not exist",
+			templateID:  2,
+			template:    nil,
+			expectedErr: ErrNotFound,
+		},
+	}
+
+	for _, us := range ucs {
+		us := us
+		t.Run(us.desc, func(t *testing.T) {
+			svc := NewQuerySvc(repo)
+
+			tmplt, err := svc.GetTemplate(us.templateID)
+			if !errors.Is(err, us.expectedErr) {
+				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
+			}
+			if err == nil && us.template != nil {
+				if tmplt.Type != us.template.Type {
+					t.Errorf("expected: %s, got: %s\n", us.template.Type, tmplt.Type)
+				}
+				if !slices.Equal(tmplt.Body, us.template.Body) {
+					t.Errorf("expected: %s, got: %s\n", us.template.Body, tmplt.Body)
+				}
+			}
+		})
+	}
+}
+
+func TestListTemplate(t *testing.T) {
+	repo, err := NewMemory()
+	if err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+	svc := NewQuerySvc(repo)
+
+	// list empty storage
+	result, err := svc.ListTemplates()
+	if err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+	if len(result) > 0 {
+		t.Fatalf("expected empty result, but got %+v\n", result)
+	}
+
+	templates := []Template{
+		{
+			Type: "ZPL",
+			Body: []byte(`^XA
+^FX Third section with bar code.
+^BY5,2,270
+^FO100,550^BC^FD12345678^FS
+^XZ
+`),
+		},
+		{
+			Type: "ZPL-II",
+			Body: []byte(`^XA
+^FX Third section with bar code.
+^BY5,2,270
+^FO100,550^BC^FD12345678^FS
+^XZ
+`),
+		},
+	}
+	for i := range templates {
+		template := &templates[i]
+		err = repo.StoreTemplate(template)
+		if err != nil {
+			t.Fatalf("got error: %s\n", err)
+		}
+	}
+
+	// list all templates in storage
+	result, err = svc.ListTemplates()
+	if err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+	if len(result) != len(templates) {
+		t.Fatalf("expected result has same length as stored templates: %d, but got %d\n", len(templates), len(result))
 	}
 }

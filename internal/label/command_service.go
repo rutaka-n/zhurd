@@ -9,9 +9,12 @@ import (
 
 var ValidationError = errors.New("Validation error")
 
-type LabelStorerDeleter interface {
+type StorerDeleter interface {
 	StoreLabel(*Label) error
 	DeleteLabel(int64) error
+	GetLabel(int64) (Label, error)
+	StoreTemplate(*Template) error
+	DeleteTemplate(int64) error
 }
 
 type CreateLabel struct {
@@ -19,12 +22,18 @@ type CreateLabel struct {
 	Comment string `json:"comment"`
 }
 
+type CreateTemplate struct {
+	LabelID int64
+	Type    string `json:"type" validate:"required"`
+	Body    []byte `json:"body" validate:"required"`
+}
+
 type CommandSvc struct {
-	db       LabelStorerDeleter
+	db       StorerDeleter
 	validate *validator.Validate
 }
 
-func NewCommandSvc(db LabelStorerDeleter) CommandSvc {
+func NewCommandSvc(db StorerDeleter) CommandSvc {
 	return CommandSvc{
 		db:       db,
 		validate: validator.New(validator.WithRequiredStructEnabled()),
@@ -36,9 +45,9 @@ func (svc CommandSvc) CreateLabel(cl CreateLabel) (Label, error) {
 		return Label{}, fmt.Errorf("%w: %w", ValidationError, err)
 	}
 	l := Label{
-        Name: cl.Name,
-        Comment: cl.Comment,
-    }
+		Name:    cl.Name,
+		Comment: cl.Comment,
+	}
 
 	if err := svc.db.StoreLabel(&l); err != nil {
 		return Label{}, err
@@ -48,5 +57,28 @@ func (svc CommandSvc) CreateLabel(cl CreateLabel) (Label, error) {
 }
 
 func (svc CommandSvc) DeleteLabel(labelID int64) error {
-    return svc.db.DeleteLabel(labelID)
+	return svc.db.DeleteLabel(labelID)
+}
+
+func (svc CommandSvc) CreateTemplate(ct CreateTemplate) (Template, error) {
+	if err := svc.validate.Struct(ct); err != nil {
+		return Template{}, fmt.Errorf("%w: %w", ValidationError, err)
+	}
+	if _, err := svc.db.GetLabel(ct.LabelID); err != nil {
+		return Template{}, err
+	}
+	t, err := NewTemplate(ct.LabelID, ct.Type, ct.Body)
+	if err != nil {
+		return Template{}, fmt.Errorf("%w: %w", ValidationError, err)
+	}
+
+	if err := svc.db.StoreTemplate(&t); err != nil {
+		return Template{}, err
+	}
+
+	return t, nil
+}
+
+func (svc CommandSvc) DeleteTemplate(templateID int64) error {
+	return svc.db.DeleteTemplate(templateID)
 }

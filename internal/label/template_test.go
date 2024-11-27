@@ -8,6 +8,7 @@ import (
 
 func TestPrint(t *testing.T) {
 	tcs := []struct {
+		labelID      int64
 		desc         string
 		tplt         []byte
 		placeholders map[string]string
@@ -15,7 +16,8 @@ func TestPrint(t *testing.T) {
 		expectedErr  error
 	}{
 		{
-			desc: "label w/o placeholders",
+			labelID: 1,
+			desc:    "label w/o placeholders",
 			tplt: []byte(`^XA
 ^FX Third section with bar code.
 ^BY5,2,270
@@ -32,7 +34,8 @@ func TestPrint(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			desc: "label with placeholders",
+			labelID: 1,
+			desc:    "label with placeholders",
 			tplt: []byte(`^XA
 ^FX _comment1_
 ^CF_font1_
@@ -96,7 +99,8 @@ func TestPrint(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			desc: "missing placeholder",
+			labelID: 1,
+			desc:    "missing placeholder",
 			tplt: []byte(`^XA
 ^FX _comment1_
 ^BY_global_bar_code_
@@ -116,7 +120,7 @@ func TestPrint(t *testing.T) {
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
-			tplt, err := NewTemplate("ZPL", tc.tplt)
+			tplt, err := NewTemplate(tc.labelID, "ZPL", tc.tplt)
 			if err != nil {
 				t.Fatalf("got err: %v\n", err)
 			}

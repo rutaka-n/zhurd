@@ -2,10 +2,11 @@ package label
 
 import (
 	"errors"
+	"slices"
 	"testing"
 )
 
-func TestRegister(t *testing.T) {
+func TestRegisterLabel(t *testing.T) {
 	ucs := []struct {
 		desc        string
 		cl          CreateLabel
@@ -38,23 +39,23 @@ func TestRegister(t *testing.T) {
 			}
 			svc := NewCommandSvc(repo)
 
-			p, err := svc.CreateLabel(us.cl)
+			l, err := svc.CreateLabel(us.cl)
 			if !errors.Is(err, us.expectedErr) {
 				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
 			}
 			if err == nil {
-				if p.Name != us.cl.Name {
-					t.Errorf("expected: %v, got: %v\n", us.cl.Name, p.Name)
+				if l.Name != us.cl.Name {
+					t.Errorf("expected: %v, got: %v\n", us.cl.Name, l.Name)
 				}
-				if p.Comment != us.cl.Comment {
-					t.Errorf("expected: %v, got: %v\n", us.cl.Comment, p.Comment)
+				if l.Comment != us.cl.Comment {
+					t.Errorf("expected: %v, got: %v\n", us.cl.Comment, l.Comment)
 				}
 			}
 		})
 	}
 }
 
-func TestDelete(t *testing.T) {
+func TestDeleteLabel(t *testing.T) {
 	repo, err := NewMemory()
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
@@ -74,6 +75,112 @@ func TestDelete(t *testing.T) {
 	}
 
 	_, err = repo.GetLabel(label.ID)
+	if !errors.Is(err, ErrNotFound) {
+		t.Errorf("expected: %v, got: %v\n", ErrNotFound, err)
+	}
+}
+
+func TestRegisterTemplate(t *testing.T) {
+	ucs := []struct {
+		desc        string
+		ct          CreateTemplate
+		expectedErr error
+	}{
+		{
+			desc: "happy path",
+			ct: CreateTemplate{
+				Type: "ZPL",
+				Body: []byte(`^XA
+^FX Third section with bar code.
+^BY5,2,270
+^FO100,550^BC^FD12345678^FS
+^XZ
+`),
+			},
+			expectedErr: nil,
+		},
+		{
+			desc: "empty type",
+			ct: CreateTemplate{
+				Type: "",
+				Body: []byte(`^XA
+^FX Third section with bar code.
+^BY5,2,270
+^FO100,550^BC^FD12345678^FS
+^XZ
+`),
+			},
+			expectedErr: ValidationError,
+		},
+		{
+			desc: "empty body",
+			ct: CreateTemplate{
+				Type: "ZPL",
+				Body: nil,
+			},
+			expectedErr: ValidationError,
+		},
+	}
+
+	for _, us := range ucs {
+		us := us
+		t.Run(us.desc, func(t *testing.T) {
+			repo, err := NewMemory()
+			if err != nil {
+				t.Fatalf("got error: %s\n", err)
+			}
+			svc := NewCommandSvc(repo)
+			label := &Label{
+				Name:    "new label",
+				Comment: "test label",
+			}
+
+			if err := repo.StoreLabel(label); err != nil {
+				t.Fatalf("got error: %s\n", err)
+			}
+
+			us.ct.LabelID = label.ID
+			tmplt, err := svc.CreateTemplate(us.ct)
+			if !errors.Is(err, us.expectedErr) {
+				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
+			}
+			if err == nil {
+				if tmplt.Type != us.ct.Type {
+					t.Errorf("expected: %v, got: %v\n", us.ct.Type, tmplt.Type)
+				}
+				if !slices.Equal(tmplt.Body, us.ct.Body) {
+					t.Errorf("expected: %v, got: %v\n", us.ct.Body, tmplt.Body)
+				}
+			}
+		})
+	}
+}
+
+func TestDeleteTemplate(t *testing.T) {
+	repo, err := NewMemory()
+	if err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+	svc := NewCommandSvc(repo)
+	template := &Template{
+		Type: "ZPL",
+		Body: []byte(`^XA
+^FX Third section with bar code.
+^BY5,2,270
+^FO100,550^BC^FD12345678^FS
+^XZ
+`),
+	}
+
+	if err := repo.StoreTemplate(template); err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+
+	if err := svc.DeleteTemplate(template.ID); err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+
+	_, err = repo.GetTemplate(template.ID)
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("expected: %v, got: %v\n", ErrNotFound, err)
 	}

@@ -17,19 +17,21 @@ const (
 )
 
 type Template struct {
-	ID   int64  `json:"id"`
-	Type string `json:"type"`
-	Body []byte `json:"body"`
+	ID      int64 `json:"id"`
+	labelID int64
+	Type    string `json:"type"`
+	Body    []byte `json:"body"`
 }
 
-func NewTemplate(pType string, body []byte) (Template, error) {
+func NewTemplate(labelID int64, pType string, body []byte) (Template, error) {
 	escapedBody, err := escapeBody(body)
 	if err != nil {
 		return Template{}, err
 	}
 	return Template{
-		Type: pType,
-		Body: escapedBody,
+		labelID: labelID,
+		Type:    pType,
+		Body:    escapedBody,
 	}, nil
 }
 
