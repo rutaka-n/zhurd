@@ -86,3 +86,62 @@ func (m *Memory) DeleteLabel(id int64) error {
 	delete(m.labels, id)
 	return nil
 }
+
+func (m *Memory) StoreTemplate(t *Template) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if t.ID == 0 {
+		if _, ok := m.templates[m.nextTemplateID]; ok {
+			panic("could not generate unique ID for template")
+		}
+		t.ID = m.nextTemplateID
+		m.nextTemplateID += 1
+	}
+
+	data, err := json.Marshal(t)
+	if err != nil {
+		return err
+	}
+	m.templates[t.ID] = data
+
+	return nil
+}
+
+func (m *Memory) ListTemplates() ([]Template, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	templates := make([]Template, 0, len(m.templates))
+
+	for _, val := range m.templates {
+		var l Template
+		if err := json.Unmarshal(val, &l); err != nil {
+			return nil, err
+		}
+		templates = append(templates, l)
+	}
+	return templates, nil
+}
+
+func (m *Memory) GetTemplate(id int64) (Template, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	data, ok := m.templates[id]
+	if !ok {
+		return Template{}, ErrNotFound
+	}
+	var t Template
+	if err := json.Unmarshal(data, &t); err != nil {
+		return Template{}, err
+	}
+	return t, nil
+}
+
+func (m *Memory) DeleteTemplate(id int64) error {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if _, ok := m.templates[id]; !ok {
+		return ErrNotFound
+	}
+	delete(m.templates, id)
+	return nil
+}

@@ -17,9 +17,9 @@ const (
 )
 
 type Template struct {
-	ID    int64
-	pType string
-	body  []byte
+	ID   int64  `json:"id"`
+	Type string `json:"type"`
+	Body []byte `json:"body"`
 }
 
 func NewTemplate(pType string, body []byte) (Template, error) {
@@ -28,14 +28,14 @@ func NewTemplate(pType string, body []byte) (Template, error) {
 		return Template{}, err
 	}
 	return Template{
-		pType: pType,
-		body:  escapedBody,
+		Type: pType,
+		Body: escapedBody,
 	}, nil
 }
 
 func (t Template) Print(placeholders map[string]string) ([]byte, error) {
 	output := bytes.NewBuffer([]byte{})
-	parts := bytes.Split(t.body, []byte(separator))
+	parts := bytes.Split(t.Body, []byte(separator))
 	for _, part := range parts {
 		if isPlaceholder(part) {
 			val, ok := placeholders[string(part)]
