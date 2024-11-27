@@ -38,7 +38,7 @@ func TestRegister(t *testing.T) {
 			if err != nil {
 				t.Fatalf("got error: %s\n", err)
 			}
-			svc := NewRegisterSvc(repo)
+			svc := NewCommandSvc(repo)
 
 			p, err := svc.Call(us.cp)
 			if !errors.Is(err, us.expectedErr) {

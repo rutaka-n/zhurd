@@ -19,19 +19,19 @@ type CreatePrinter struct {
 	Comment string `json:"comment"`
 }
 
-type Register struct {
+type CommandSvc struct {
 	db       Storer
 	validate *validator.Validate
 }
 
-func NewRegisterSvc(db Storer) Register {
-	return Register{
+func NewCommandSvc(db Storer) CommandSvc {
+	return CommandSvc{
 		db:       db,
 		validate: validator.New(validator.WithRequiredStructEnabled()),
 	}
 }
 
-func (svc Register) Call(cp CreatePrinter) (Printer, error) {
+func (svc CommandSvc) Call(cp CreatePrinter) (Printer, error) {
 	if err := svc.validate.Struct(cp); err != nil {
 		return Printer{}, fmt.Errorf("%w: %w", ValidationError, err)
 	}
