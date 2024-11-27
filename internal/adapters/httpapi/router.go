@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"zhurd/internal/label"
 	"zhurd/internal/printer"
 )
 
@@ -15,6 +16,7 @@ func New() (*mux.Router, error) {
 	r.HandleFunc("/", defaultHandler)
 	v1r := r.PathPrefix("/v1").Subrouter()
 
+	// printer
 	printerRepo, err := printer.NewMemory()
 	if err != nil {
 		return nil, err
@@ -27,6 +29,20 @@ func New() (*mux.Router, error) {
 
 	v1r.HandleFunc("/printers", createPrinterHandler(printerCommandSvc)).Methods("POST")
 	v1r.HandleFunc("/printers/{printerID}", deletePrinterByIDHandler(printerCommandSvc)).Methods("DELETE")
+
+	// label
+	labelRepo, err := label.NewMemory()
+	if err != nil {
+		return nil, err
+	}
+	labelCommandSvc := label.NewCommandSvc(labelRepo)
+	labelQuerySvc := label.NewQuerySvc(labelRepo)
+
+	v1r.HandleFunc("/labels", listLabelsHandler(labelQuerySvc)).Methods("GET")
+	v1r.HandleFunc("/labels/{labelID}", showLabelByIDHandler(labelQuerySvc)).Methods("GET")
+
+	v1r.HandleFunc("/labels", createLabelHandler(labelCommandSvc)).Methods("POST")
+	v1r.HandleFunc("/labels/{labelID}", deleteLabelByIDHandler(labelCommandSvc)).Methods("DELETE")
 
 	r.Use(loggingMiddleware)
 
