@@ -5,8 +5,9 @@ import (
 )
 
 type Label struct {
-	ID           int64
-	Comment      string
+    ID           int64 `json:"id"`
+    Name         string `json:"name"`
+    Comment      string `json:"comment"`
 	Templates    map[string]Template
 	Placeholders map[string]string
 }
