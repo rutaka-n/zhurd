@@ -27,20 +27,18 @@ func NewMemory() (*Memory, error) {
 func (m *Memory) Store(p *Printer) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if p.ID == 0 {
+		if _, ok := m.m[m.nextID]; ok {
+			panic("could not generate unique ID for printer")
+		}
+		p.ID = m.nextID
+		m.nextID += 1
+	}
+
 	data, err := json.Marshal(p)
 	if err != nil {
 		return err
 	}
-	if p.ID != 0 {
-		m.m[p.ID] = data
-		return nil
-	}
-
-	if _, ok := m.m[m.nextID]; ok {
-		panic("could not generate unique ID for printer")
-	}
-	p.ID = m.nextID
-	m.nextID += 1
 	m.m[p.ID] = data
 
 	return nil
