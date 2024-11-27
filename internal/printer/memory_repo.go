@@ -46,6 +46,21 @@ func (m *Memory) Store(p *Printer) error {
 	return nil
 }
 
+func (m *Memory) List() ([]Printer, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	printers := make([]Printer, 0, len(m.m))
+
+	for _, val := range m.m {
+		var p Printer
+		if err := json.Unmarshal(val, &p); err != nil {
+			return nil, err
+		}
+		printers = append(printers, p)
+	}
+	return printers, nil
+}
+
 func (m *Memory) Get(id int64) (Printer, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -60,12 +75,12 @@ func (m *Memory) Get(id int64) (Printer, error) {
 	return p, nil
 }
 
-func (m *Memory) Delete(id int64) (error) {
+func (m *Memory) Delete(id int64) error {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	if _, ok := m.m[id]; !ok {
 		return ErrNotFound
 	}
-    delete(m.m, id)
+	delete(m.m, id)
 	return nil
 }
