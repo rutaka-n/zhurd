@@ -17,8 +17,8 @@ const (
 )
 
 type Template struct {
-	ID      int64 `json:"id"`
-	labelID int64
+	ID      int64  `json:"id"`
+	LabelID int64  `json:"label_id"`
 	Type    string `json:"type"`
 	Body    []byte `json:"body"`
 }
@@ -29,7 +29,7 @@ func NewTemplate(labelID int64, pType string, body []byte) (Template, error) {
 		return Template{}, err
 	}
 	return Template{
-		labelID: labelID,
+		LabelID: labelID,
 		Type:    pType,
 		Body:    escapedBody,
 	}, nil

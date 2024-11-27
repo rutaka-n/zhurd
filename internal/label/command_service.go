@@ -14,7 +14,7 @@ type StorerDeleter interface {
 	DeleteLabel(int64) error
 	GetLabel(int64) (Label, error)
 	StoreTemplate(*Template) error
-	DeleteTemplate(int64) error
+	DeleteTemplate(int64, int64) error
 }
 
 type CreateLabel struct {
@@ -79,6 +79,6 @@ func (svc CommandSvc) CreateTemplate(ct CreateTemplate) (Template, error) {
 	return t, nil
 }
 
-func (svc CommandSvc) DeleteTemplate(templateID int64) error {
-	return svc.db.DeleteTemplate(templateID)
+func (svc CommandSvc) DeleteTemplate(labelID, templateID int64) error {
+	return svc.db.DeleteTemplate(labelID, templateID)
 }

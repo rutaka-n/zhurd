@@ -107,22 +107,24 @@ func (m *Memory) StoreTemplate(t *Template) error {
 	return nil
 }
 
-func (m *Memory) ListTemplates() ([]Template, error) {
+func (m *Memory) ListTemplates(labelID int64) ([]Template, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	templates := make([]Template, 0, len(m.templates))
 
 	for _, val := range m.templates {
-		var l Template
-		if err := json.Unmarshal(val, &l); err != nil {
+		var t Template
+		if err := json.Unmarshal(val, &t); err != nil {
 			return nil, err
 		}
-		templates = append(templates, l)
+		if t.LabelID == labelID {
+			templates = append(templates, t)
+		}
 	}
 	return templates, nil
 }
 
-func (m *Memory) GetTemplate(id int64) (Template, error) {
+func (m *Memory) GetTemplate(labelID, id int64) (Template, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	data, ok := m.templates[id]
@@ -133,15 +135,29 @@ func (m *Memory) GetTemplate(id int64) (Template, error) {
 	if err := json.Unmarshal(data, &t); err != nil {
 		return Template{}, err
 	}
+	if t.LabelID != labelID {
+		return Template{}, ErrNotFound
+	}
+
 	return t, nil
 }
 
-func (m *Memory) DeleteTemplate(id int64) error {
+func (m *Memory) DeleteTemplate(labelID, templateID int64) error {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	if _, ok := m.templates[id]; !ok {
+	val, ok := m.templates[templateID]
+	if !ok {
 		return ErrNotFound
 	}
-	delete(m.templates, id)
+
+	var t Template
+	if err := json.Unmarshal(val, &t); err != nil {
+		return err
+	}
+	if t.LabelID != labelID {
+		return ErrNotFound
+	}
+
+	delete(m.templates, templateID)
 	return nil
 }

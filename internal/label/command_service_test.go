@@ -161,9 +161,14 @@ func TestDeleteTemplate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
+	label := &Label{
+		Name: "label",
+	}
+	repo.StoreLabel(label)
 	svc := NewCommandSvc(repo)
 	template := &Template{
-		Type: "ZPL",
+		LabelID: label.ID,
+		Type:    "ZPL",
 		Body: []byte(`^XA
 ^FX Third section with bar code.
 ^BY5,2,270
@@ -176,11 +181,11 @@ func TestDeleteTemplate(t *testing.T) {
 		t.Fatalf("got error: %s\n", err)
 	}
 
-	if err := svc.DeleteTemplate(template.ID); err != nil {
+	if err := svc.DeleteTemplate(template.LabelID, template.ID); err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
 
-	_, err = repo.GetTemplate(template.ID)
+	_, err = repo.GetTemplate(template.LabelID, template.ID)
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("expected: %v, got: %v\n", ErrNotFound, err)
 	}

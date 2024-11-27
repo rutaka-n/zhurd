@@ -44,6 +44,13 @@ func New() (*mux.Router, error) {
 	v1r.HandleFunc("/labels", createLabelHandler(labelCommandSvc)).Methods("POST")
 	v1r.HandleFunc("/labels/{labelID}", deleteLabelByIDHandler(labelCommandSvc)).Methods("DELETE")
 
+	// template
+	v1r.HandleFunc("/labels/{labelID}/templates", listTemplatesHandler(labelQuerySvc)).Methods("GET")
+	v1r.HandleFunc("/labels/{labelID}/templates/{templateID}", showTemplateByIDHandler(labelQuerySvc)).Methods("GET")
+
+	v1r.HandleFunc("/labels/{labelID}/templates", createTemplateHandler(labelCommandSvc)).Methods("POST")
+	v1r.HandleFunc("/labels/{labelID}/templates/{templateID}", deleteTemplateByIDHandler(labelCommandSvc)).Methods("DELETE")
+
 	r.Use(loggingMiddleware)
 
 	return r, nil

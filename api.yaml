@@ -381,6 +381,10 @@ components:
           type: integer
           format: int64
           example: 1
+        label_id:
+          type: integer
+          format: int64
+          example: 1
         type:
           type: string
           example: ZPL

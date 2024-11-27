@@ -3,8 +3,8 @@ package label
 type GetterLister interface {
 	GetLabel(int64) (Label, error)
 	ListLabels() ([]Label, error)
-	GetTemplate(int64) (Template, error)
-	ListTemplates() ([]Template, error)
+	GetTemplate(int64, int64) (Template, error)
+	ListTemplates(int64) ([]Template, error)
 }
 
 type QuerySvc struct {
@@ -23,10 +23,10 @@ func (svc QuerySvc) ListLabels() ([]Label, error) {
 	return svc.db.ListLabels()
 }
 
-func (svc QuerySvc) GetTemplate(labelID int64) (Template, error) {
-	return svc.db.GetTemplate(labelID)
+func (svc QuerySvc) GetTemplate(labelID, templateID int64) (Template, error) {
+	return svc.db.GetTemplate(labelID, templateID)
 }
 
-func (svc QuerySvc) ListTemplates() ([]Template, error) {
-	return svc.db.ListTemplates()
+func (svc QuerySvc) ListTemplates(labelID int64) ([]Template, error) {
+	return svc.db.ListTemplates(labelID)
 }

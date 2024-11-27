@@ -117,9 +117,14 @@ func TestGetTemplate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
+	label := &Label{
+		Name: "label",
+	}
+	repo.StoreLabel(label)
 
 	template := &Template{
-		Type: "ZPL-II",
+		LabelID: label.ID,
+		Type:    "ZPL-II",
 		Body: []byte(`^XA
 ^FX Third section with bar code.
 ^BY5,2,270
@@ -163,7 +168,7 @@ func TestGetTemplate(t *testing.T) {
 		t.Run(us.desc, func(t *testing.T) {
 			svc := NewQuerySvc(repo)
 
-			tmplt, err := svc.GetTemplate(us.templateID)
+			tmplt, err := svc.GetTemplate(template.LabelID, us.templateID)
 			if !errors.Is(err, us.expectedErr) {
 				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
 			}
@@ -184,10 +189,14 @@ func TestListTemplate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
+	label := &Label{
+		Name: "label",
+	}
+	repo.StoreLabel(label)
 	svc := NewQuerySvc(repo)
 
 	// list empty storage
-	result, err := svc.ListTemplates()
+	result, err := svc.ListTemplates(1)
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
@@ -197,7 +206,8 @@ func TestListTemplate(t *testing.T) {
 
 	templates := []Template{
 		{
-			Type: "ZPL",
+			LabelID: label.ID,
+			Type:    "ZPL",
 			Body: []byte(`^XA
 ^FX Third section with bar code.
 ^BY5,2,270
@@ -206,7 +216,8 @@ func TestListTemplate(t *testing.T) {
 `),
 		},
 		{
-			Type: "ZPL-II",
+			LabelID: label.ID,
+			Type:    "ZPL-II",
 			Body: []byte(`^XA
 ^FX Third section with bar code.
 ^BY5,2,270
@@ -224,7 +235,7 @@ func TestListTemplate(t *testing.T) {
 	}
 
 	// list all templates in storage
-	result, err = svc.ListTemplates()
+	result, err = svc.ListTemplates(label.ID)
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
