@@ -9,6 +9,7 @@ import (
 type Logger struct {
 	Destination string `json:"destination"`
 	Level       string `json:"level"`
+	Format      string `json:"format"`
 }
 
 // Server contains all configuration for server.

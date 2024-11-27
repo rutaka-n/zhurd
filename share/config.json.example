@@ -4,6 +4,7 @@
         "graceful_timeout_s": 5,
         "logger": {
             "destination": "stdout",
+            "format": "json",
             "level": "INFO"
             }
         }

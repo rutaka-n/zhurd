@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,6 +28,29 @@ func main() {
 		panic(err)
 	}
 
+	var logDest io.Writer
+	if cfg.Server.Logger.Destination == "stdout" {
+		logDest = os.Stdout
+	} else {
+		logFile, err := os.OpenFile(cfg.Server.Logger.Destination, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer logFile.Close()
+		logDest = logFile
+	}
+
+	var logger *slog.Logger
+	switch cfg.Server.Logger.Format {
+	case "json":
+		logger = slog.New(slog.NewJSONHandler(logDest, nil))
+	case "text":
+		logger = slog.New(slog.NewJSONHandler(logDest, nil))
+	default:
+		panic("unknown logger format, supported formats are: 'json', 'text'")
+	}
+	slog.SetDefault(logger)
+
 	srv := &http.Server{
 		Addr: cfg.Server.Addr,
 		// Good practice to set timeouts to avoid Slowloris attacks.
@@ -39,7 +63,7 @@ func main() {
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
-			// log.Println(err)
+			slog.Error("fail to run API server", "error", err)
 		}
 	}()
 
@@ -60,6 +84,6 @@ func main() {
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
-	fmt.Println("shutting down")
+	slog.Info("shutting down")
 	os.Exit(0)
 }
