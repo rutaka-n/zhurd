@@ -40,7 +40,7 @@ func TestRegister(t *testing.T) {
 			}
 			svc := NewCommandSvc(repo)
 
-			p, err := svc.Call(us.cp)
+			p, err := svc.Create(us.cp)
 			if !errors.Is(err, us.expectedErr) {
 				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
 			}
@@ -57,4 +57,29 @@ func TestRegister(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDelete(t *testing.T) {
+	repo, err := NewMemory()
+	if err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+	svc := NewCommandSvc(repo)
+	printer := &Printer{
+		Addr: "0.0.0.0:8009",
+		Type: "ZPL",
+	}
+
+	if err := repo.Store(printer); err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+
+	if err := svc.Delete(printer.ID); err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+
+    _, err = repo.Get(printer.ID)
+    if !errors.Is(err, ErrNotFound) {
+        t.Errorf("expected: %v, got: %v\n", ErrNotFound, err)
+    }
 }

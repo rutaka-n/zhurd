@@ -59,3 +59,13 @@ func (m *Memory) Get(id int64) (Printer, error) {
 	}
 	return p, nil
 }
+
+func (m *Memory) Delete(id int64) (error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if _, ok := m.m[id]; !ok {
+		return ErrNotFound
+	}
+    delete(m.m, id)
+	return nil
+}

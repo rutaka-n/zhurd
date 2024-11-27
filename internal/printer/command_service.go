@@ -9,8 +9,9 @@ import (
 
 var ValidationError = errors.New("Validation error")
 
-type Storer interface {
+type StorerDeleter interface {
 	Store(*Printer) error
+	Delete(int64) error
 }
 
 type CreatePrinter struct {
@@ -20,18 +21,18 @@ type CreatePrinter struct {
 }
 
 type CommandSvc struct {
-	db       Storer
+	db       StorerDeleter
 	validate *validator.Validate
 }
 
-func NewCommandSvc(db Storer) CommandSvc {
+func NewCommandSvc(db StorerDeleter) CommandSvc {
 	return CommandSvc{
 		db:       db,
 		validate: validator.New(validator.WithRequiredStructEnabled()),
 	}
 }
 
-func (svc CommandSvc) Call(cp CreatePrinter) (Printer, error) {
+func (svc CommandSvc) Create(cp CreatePrinter) (Printer, error) {
 	if err := svc.validate.Struct(cp); err != nil {
 		return Printer{}, fmt.Errorf("%w: %w", ValidationError, err)
 	}
@@ -42,4 +43,8 @@ func (svc CommandSvc) Call(cp CreatePrinter) (Printer, error) {
 	}
 
 	return p, nil
+}
+
+func (svc CommandSvc) Delete(printerID int64) error {
+    return svc.db.Delete(printerID)
 }
