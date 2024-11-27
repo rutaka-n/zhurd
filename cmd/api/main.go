@@ -7,13 +7,20 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
+	"syscall"
 	"time"
 
 	"zhurd/internal/adapters/httpapi"
 	"zhurd/internal/config"
+	pq "zhurd/internal/printingqueue"
 )
 
 func main() {
+	// use NotifyContext for gracefull shutdown
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
 	cfgFile, err := os.Open("./share/config.json.example")
 	if err != nil {
 		panic(err)
@@ -60,6 +67,17 @@ func main() {
 		Handler:      apiRouter, // Pass our instance of gorilla/mux in.
 	}
 
+	pooler := pq.NewPooler(cfg.Server.QueueBufferSize)
+	wg := sync.WaitGroup{}
+	go func() {
+		defer wg.Done()
+		pooler.Run(ctx)
+	}()
+
+	// TODO: read printer from DB on startup to add queues
+	// TODO: pass pooler into printer.CommandSvc as dependecy to add and delete printers queues
+	// TODO: add enqueue endpoint that send document to printer
+
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
@@ -76,14 +94,15 @@ func main() {
 	<-c
 
 	// Create a deadline to wait for.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(cfg.Server.GracefulTimeoutSec))
-	defer cancel()
+	sdCtx, sdCancel := context.WithTimeout(ctx, time.Second*time.Duration(cfg.Server.GracefulTimeoutSec))
+	defer sdCancel()
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.
-	srv.Shutdown(ctx)
+	srv.Shutdown(sdCtx)
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
 	slog.Info("shutting down")
+	wg.Wait()
 	os.Exit(0)
 }

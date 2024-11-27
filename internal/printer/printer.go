@@ -2,6 +2,7 @@ package printer
 
 import (
 	"errors"
+	"log/slog"
 	"net"
 )
 
@@ -27,11 +28,17 @@ func New(pType, addr, comment string) Printer {
 }
 
 func (p *Printer) Connect() error {
-	conn, err := net.Dial("tcp", p.Addr)
+	if p.isConnected {
+		slog.Warn("printer alredy has established connection, ignored", "ID", p.ID)
+	}
+	resolvedAddr, err := net.ResolveTCPAddr("tcp", p.Addr)
 	if err != nil {
 		return err
 	}
-	p.conn = conn
+	p.conn, err = net.DialTCP("tcp", nil, resolvedAddr)
+	if err != nil {
+		return err
+	}
 	p.isConnected = true
 	return nil
 }
@@ -39,6 +46,10 @@ func (p *Printer) Connect() error {
 func (p *Printer) Close() error {
 	p.isConnected = false
 	return p.conn.Close()
+}
+
+func (p *Printer) IsConnected() bool {
+	return p.isConnected
 }
 
 func (p *Printer) Enqueue(label Printable) error {
@@ -50,12 +61,15 @@ func (p *Printer) Enqueue(label Printable) error {
 		return err
 	}
 
-	_, err = p.conn.Write(bs)
+	written, err := p.conn.Write(bs)
 	if err != nil {
 		if errors.Is(err, net.ErrClosed) {
 			p.isConnected = false
 		}
 		return err
+	}
+	if written < len(bs) {
+		slog.Warn("document was not fully send to printer", "size", len(bs), "bytesSent", written)
 	}
 
 	return nil

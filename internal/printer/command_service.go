@@ -14,6 +14,11 @@ type StorerDeleter interface {
 	Delete(int64) error
 }
 
+type Queue interface {
+	Add(id int64, addr string)
+	Delete(id int64) error
+}
+
 type CreatePrinter struct {
 	Addr    string `json:"addr" validate:"required,hostname_port"`
 	Type    string `json:"type" validate:"required"`
@@ -22,12 +27,14 @@ type CreatePrinter struct {
 
 type CommandSvc struct {
 	db       StorerDeleter
+	queue    Queue
 	validate *validator.Validate
 }
 
-func NewCommandSvc(db StorerDeleter) CommandSvc {
+func NewCommandSvc(db StorerDeleter, queue Queue) CommandSvc {
 	return CommandSvc{
 		db:       db,
+		queue:    queue,
 		validate: validator.New(validator.WithRequiredStructEnabled()),
 	}
 }
@@ -42,9 +49,10 @@ func (svc CommandSvc) Create(cp CreatePrinter) (Printer, error) {
 		return Printer{}, err
 	}
 
+    svc.queue.Add(p.ID, p.Addr)
 	return p, nil
 }
 
 func (svc CommandSvc) Delete(printerID int64) error {
-    return svc.db.Delete(printerID)
+	return svc.db.Delete(printerID)
 }

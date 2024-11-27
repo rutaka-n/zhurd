@@ -346,6 +346,11 @@ components:
           type: integer
           example: 3
           default: 1
+        timeout:
+          type: integer
+          description: timeout that used to print next document in ms
+          example: 5
+          default: 0
         placeholders:
           type: array
           items:

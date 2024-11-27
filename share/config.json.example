@@ -2,6 +2,7 @@
     "server": {
         "addr": "localhost:3003",
         "graceful_timeout_s": 5,
+        "queue_buffer_size": 64,
         "logger": {
             "destination": "stdout",
             "format": "json",
