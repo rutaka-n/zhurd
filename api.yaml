@@ -162,7 +162,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EnqueueLable'
+              $ref: '#/components/schemas/EnqueueLabel'
       responses:
         '204':
           description: No content
@@ -333,11 +333,11 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Label'
-    EnqueueLable:
+    EnqueueLabel:
       required:
-        - printerID
+        - printer_id
       properties:
-        printerID:
+        printer_id:
           type: integer
           format: int64
           description: ID of printer to print label
