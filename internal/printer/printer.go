@@ -44,6 +44,9 @@ func (p *Printer) Connect() error {
 }
 
 func (p *Printer) Close() error {
+	if !p.isConnected {
+		return nil
+	}
 	p.isConnected = false
 	return p.conn.Close()
 }
