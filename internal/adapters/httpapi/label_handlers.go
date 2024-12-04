@@ -95,6 +95,34 @@ func deleteLabelByIDHandler(svc label.CommandSvc) func(w http.ResponseWriter, r 
 	}
 }
 
+func enqueueLabelHandler(svc label.CommandSvc) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		labelID, err := getLabelID(r)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		var enqueueLabel label.EnqueueLabel
+		if err := json.NewDecoder(r.Body).Decode(&enqueueLabel); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if err := svc.Enqueue(labelID, enqueueLabel); err != nil {
+			if errors.Is(err, label.ValidationError) {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 func getLabelID(r *http.Request) (int64, error) {
 	vars := mux.Vars(r)
 	val := vars["labelID"]

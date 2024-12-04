@@ -9,9 +9,10 @@ import (
 	"github.com/gorilla/mux"
 	"zhurd/internal/label"
 	"zhurd/internal/printer"
+	pq "zhurd/internal/printingqueue"
 )
 
-func New() (*mux.Router, error) {
+func New(queue *pq.Pooler) (*mux.Router, error) {
 	r := mux.NewRouter()
 	r.HandleFunc("/", defaultHandler)
 	v1r := r.PathPrefix("/v1").Subrouter()
@@ -21,7 +22,7 @@ func New() (*mux.Router, error) {
 	if err != nil {
 		return nil, err
 	}
-	printerCommandSvc := printer.NewCommandSvc(printerRepo)
+	printerCommandSvc := printer.NewCommandSvc(printerRepo, queue)
 	printerQuerySvc := printer.NewQuerySvc(printerRepo)
 
 	v1r.HandleFunc("/printers", listPrintersHandler(printerQuerySvc)).Methods("GET")
@@ -50,6 +51,9 @@ func New() (*mux.Router, error) {
 
 	v1r.HandleFunc("/labels/{labelID}/templates", createTemplateHandler(labelCommandSvc)).Methods("POST")
 	v1r.HandleFunc("/labels/{labelID}/templates/{templateID}", deleteTemplateByIDHandler(labelCommandSvc)).Methods("DELETE")
+
+	// enque label
+	v1r.HandleFunc("/labels/{labelID}/enqueue", enqueueLabelHandler(labelCommandSvc)).Methods("POST")
 
 	r.Use(loggingMiddleware)
 
