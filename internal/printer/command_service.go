@@ -15,7 +15,7 @@ type StorerDeleter interface {
 }
 
 type Queue interface {
-	Add(id int64, addr string)
+	Add(printer Printer)
 	Delete(id int64) error
 }
 
@@ -49,7 +49,7 @@ func (svc CommandSvc) Create(cp CreatePrinter) (Printer, error) {
 		return Printer{}, err
 	}
 
-    svc.queue.Add(p.ID, p.Addr)
+	svc.queue.Add(p)
 	return p, nil
 }
 
