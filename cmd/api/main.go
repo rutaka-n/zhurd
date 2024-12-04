@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -30,33 +31,27 @@ func main() {
 		panic(err)
 	}
 
-	apiRouter, err := httpapi.New()
-	if err != nil {
+	if err := initLogger(cfg.Server.Logger); err != nil {
 		panic(err)
 	}
 
-	var logDest io.Writer
-	if cfg.Server.Logger.Destination == "stdout" {
-		logDest = os.Stdout
-	} else {
-		logFile, err := os.OpenFile(cfg.Server.Logger.Destination, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			panic(err)
-		}
-		defer logFile.Close()
-		logDest = logFile
-	}
+	// TODO: read printer from DB on startup to add queues
+	// TODO: pass pooler into printer.CommandSvc as dependecy to add and delete printers queues
+	// TODO: add enqueue endpoint that send document to printer
+	pooler := pq.NewPooler(cfg.Server.QueueBufferSize)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		// ctx, cancel := context.WithCancel(ctx)
+		// defer cancel()
+		pooler.Run(ctx)
+	}()
 
-	var logger *slog.Logger
-	switch cfg.Server.Logger.Format {
-	case "json":
-		logger = slog.New(slog.NewJSONHandler(logDest, nil))
-	case "text":
-		logger = slog.New(slog.NewJSONHandler(logDest, nil))
-	default:
-		panic("unknown logger format, supported formats are: 'json', 'text'")
+	apiRouter, err := httpapi.New(pooler)
+	if err != nil {
+		panic(err)
 	}
-	slog.SetDefault(logger)
 
 	srv := &http.Server{
 		Addr: cfg.Server.Addr,
@@ -67,19 +62,9 @@ func main() {
 		Handler:      apiRouter, // Pass our instance of gorilla/mux in.
 	}
 
-	pooler := pq.NewPooler(cfg.Server.QueueBufferSize)
-	wg := sync.WaitGroup{}
-	go func() {
-		defer wg.Done()
-		pooler.Run(ctx)
-	}()
-
-	// TODO: read printer from DB on startup to add queues
-	// TODO: pass pooler into printer.CommandSvc as dependecy to add and delete printers queues
-	// TODO: add enqueue endpoint that send document to printer
-
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
+		slog.Info("runing server", "addr", cfg.Server.Addr)
 		if err := srv.ListenAndServe(); err != nil {
 			slog.Error("fail to run API server", "error", err)
 		}
@@ -105,4 +90,49 @@ func main() {
 	slog.Info("shutting down")
 	wg.Wait()
 	os.Exit(0)
+}
+
+func initLogger(cfg config.Logger) error {
+	var logDest io.Writer
+	if cfg.Destination == "stdout" {
+		logDest = os.Stdout
+	} else {
+		logFile, err := os.OpenFile(cfg.Destination, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return fmt.Errorf("cannot open file for logging: %w", err)
+		}
+		defer logFile.Close()
+		logDest = logFile
+	}
+
+	var logLevel slog.Level
+	switch cfg.Level {
+	case "debug":
+		logLevel = slog.LevelDebug
+	case "info":
+		logLevel = slog.LevelInfo
+	case "warn":
+		logLevel = slog.LevelWarn
+	case "error":
+		logLevel = slog.LevelError
+	default:
+		return fmt.Errorf("unknown logging level, supported: 'debug', 'info', 'warn', 'error'")
+	}
+	var logger *slog.Logger
+	switch cfg.Format {
+	case "json":
+		logger = slog.New(slog.NewJSONHandler(
+			logDest,
+			&slog.HandlerOptions{Level: logLevel},
+		))
+	case "text":
+		logger = slog.New(slog.NewTextHandler(
+			logDest,
+			&slog.HandlerOptions{Level: logLevel},
+		))
+	default:
+		return fmt.Errorf("unknown logger format, supported formats are: 'json', 'text'")
+	}
+	slog.SetDefault(logger)
+	return nil
 }
