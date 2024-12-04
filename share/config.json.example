@@ -6,7 +6,7 @@
         "logger": {
             "destination": "stdout",
             "format": "json",
-            "level": "INFO"
+            "level": "info"
             }
         }
 }
