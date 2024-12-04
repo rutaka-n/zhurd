@@ -82,3 +82,7 @@ func (svc CommandSvc) CreateTemplate(ct CreateTemplate) (Template, error) {
 func (svc CommandSvc) DeleteTemplate(labelID, templateID int64) error {
 	return svc.db.DeleteTemplate(labelID, templateID)
 }
+
+func (svc CommandSvc) Enqueue(labelID int64, enqueueLabel EnqueueLabel) error {
+	return nil
+}
