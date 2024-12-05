@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"sync"
+	"time"
 
 	"zhurd/internal/printer"
 )
@@ -14,6 +15,7 @@ type Pooler struct {
 	queues     map[int64]*Queue
 	addCh      chan *Queue
 	deleteCh   chan int64
+	tasksCh    chan Task
 }
 
 func NewPooler(bufferSize int) *Pooler {
@@ -22,6 +24,7 @@ func NewPooler(bufferSize int) *Pooler {
 		queues:     map[int64]*Queue{},
 		addCh:      make(chan *Queue),
 		deleteCh:   make(chan int64),
+		tasksCh:    make(chan Task),
 	}
 }
 

@@ -1,5 +1,7 @@
 package label
 
+import "encoding/base64"
+
 type GetterLister interface {
 	GetLabel(int64) (Label, error)
 	ListLabels() ([]Label, error)
@@ -24,9 +26,26 @@ func (svc QuerySvc) ListLabels() ([]Label, error) {
 }
 
 func (svc QuerySvc) GetTemplate(labelID, templateID int64) (Template, error) {
-	return svc.db.GetTemplate(labelID, templateID)
+	tmplt, err := svc.db.GetTemplate(labelID, templateID)
+	if err != nil {
+		return Template{}, err
+	}
+	encoded := make([]byte, base64.RawStdEncoding.EncodedLen(len(tmplt.Body)))
+	base64.RawStdEncoding.Encode(encoded, tmplt.Body)
+	tmplt.Body = encoded
+	return tmplt, nil
 }
 
 func (svc QuerySvc) ListTemplates(labelID int64) ([]Template, error) {
-	return svc.db.ListTemplates(labelID)
+	tmplts, err :=  svc.db.ListTemplates(labelID)
+	if err != nil {
+		return nil, err
+	}
+	for i := range tmplts {
+		encoded := make([]byte, base64.RawStdEncoding.EncodedLen(len(tmplts[i].Body)))
+		base64.RawStdEncoding.Encode(encoded, tmplts[i].Body)
+		tmplts[i].Body = encoded
+	}
+
+	return tmplts, nil
 }

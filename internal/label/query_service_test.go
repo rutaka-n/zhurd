@@ -1,6 +1,7 @@
 package label
 
 import (
+	"encoding/base64"
 	"errors"
 	"slices"
 	"testing"
@@ -113,6 +114,14 @@ func TestListLabel(t *testing.T) {
 }
 
 func TestGetTemplate(t *testing.T) {
+	decodedBody := []byte(`^XA
+^FX Third section with bar code.
+^BY5,2,270
+^FO100,550^BC^FD12345678^FS
+^XZ
+`)
+	encodedBody := make([]byte, base64.RawStdEncoding.EncodedLen(len(decodedBody)))
+	base64.RawStdEncoding.Encode(encodedBody, decodedBody)
 	repo, err := NewMemory()
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
@@ -125,12 +134,7 @@ func TestGetTemplate(t *testing.T) {
 	template := &Template{
 		LabelID: label.ID,
 		Type:    "ZPL-II",
-		Body: []byte(`^XA
-^FX Third section with bar code.
-^BY5,2,270
-^FO100,550^BC^FD12345678^FS
-^XZ
-`),
+		Body: decodedBody,
 	}
 	err = repo.StoreTemplate(template)
 	if err != nil {
@@ -176,8 +180,8 @@ func TestGetTemplate(t *testing.T) {
 				if tmplt.Type != us.template.Type {
 					t.Errorf("expected: %s, got: %s\n", us.template.Type, tmplt.Type)
 				}
-				if !slices.Equal(tmplt.Body, us.template.Body) {
-					t.Errorf("expected: %s, got: %s\n", us.template.Body, tmplt.Body)
+				if !slices.Equal(tmplt.Body, encodedBody) {
+					t.Errorf("expected: %s, got: %s\n", encodedBody, tmplt.Body)
 				}
 			}
 		})

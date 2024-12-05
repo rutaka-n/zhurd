@@ -1,10 +1,21 @@
 package label
 
 import (
+	"encoding/base64"
 	"errors"
 	"slices"
 	"testing"
+	"time"
+	"zhurd/internal/printer"
 )
+
+type TestQueue struct {
+	enqueued int
+}
+
+func (q *TestQueue) Enqueue(printerID int64, document printer.Printable, quantity int, timeout time.Duration) {
+	q.enqueued++
+}
 
 func TestRegisterLabel(t *testing.T) {
 	ucs := []struct {
@@ -37,7 +48,8 @@ func TestRegisterLabel(t *testing.T) {
 			if err != nil {
 				t.Fatalf("got error: %s\n", err)
 			}
-			svc := NewCommandSvc(repo)
+			q := &TestQueue{}
+			svc := NewCommandSvc(repo, q)
 
 			l, err := svc.CreateLabel(us.cl)
 			if !errors.Is(err, us.expectedErr) {
@@ -60,7 +72,8 @@ func TestDeleteLabel(t *testing.T) {
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
-	svc := NewCommandSvc(repo)
+	q := &TestQueue{}
+	svc := NewCommandSvc(repo, q)
 	label := &Label{
 		Name:    "new label",
 		Comment: "test label",
@@ -81,6 +94,14 @@ func TestDeleteLabel(t *testing.T) {
 }
 
 func TestRegisterTemplate(t *testing.T) {
+	decodedBody := []byte(`^XA
+^FX Third section with bar code.
+^BY5,2,270
+^FO100,550^BC^FD12345678^FS
+^XZ
+`)
+	encodedBody := make([]byte, base64.RawStdEncoding.EncodedLen(len(decodedBody)))
+	base64.RawStdEncoding.Encode(encodedBody, decodedBody)
 	ucs := []struct {
 		desc        string
 		ct          CreateTemplate
@@ -90,12 +111,7 @@ func TestRegisterTemplate(t *testing.T) {
 			desc: "happy path",
 			ct: CreateTemplate{
 				Type: "ZPL",
-				Body: []byte(`^XA
-^FX Third section with bar code.
-^BY5,2,270
-^FO100,550^BC^FD12345678^FS
-^XZ
-`),
+				Body: encodedBody,
 			},
 			expectedErr: nil,
 		},
@@ -103,12 +119,7 @@ func TestRegisterTemplate(t *testing.T) {
 			desc: "empty type",
 			ct: CreateTemplate{
 				Type: "",
-				Body: []byte(`^XA
-^FX Third section with bar code.
-^BY5,2,270
-^FO100,550^BC^FD12345678^FS
-^XZ
-`),
+				Body: encodedBody,
 			},
 			expectedErr: ValidationError,
 		},
@@ -129,7 +140,8 @@ func TestRegisterTemplate(t *testing.T) {
 			if err != nil {
 				t.Fatalf("got error: %s\n", err)
 			}
-			svc := NewCommandSvc(repo)
+			q := &TestQueue{}
+			svc := NewCommandSvc(repo, q)
 			label := &Label{
 				Name:    "new label",
 				Comment: "test label",
@@ -148,8 +160,12 @@ func TestRegisterTemplate(t *testing.T) {
 				if tmplt.Type != us.ct.Type {
 					t.Errorf("expected: %v, got: %v\n", us.ct.Type, tmplt.Type)
 				}
-				if !slices.Equal(tmplt.Body, us.ct.Body) {
-					t.Errorf("expected: %v, got: %v\n", us.ct.Body, tmplt.Body)
+				decoded := make([]byte, base64.RawStdEncoding.DecodedLen(len(us.ct.Body)))
+				if _, err := base64.RawStdEncoding.Decode(decoded, us.ct.Body); err != nil {
+					t.Fatalf("got error: %s\n", err)
+				}
+				if !slices.Equal(tmplt.Body, decoded) {
+					t.Errorf("expected: %v, got: %v\n", decoded, tmplt.Body)
 				}
 			}
 		})
@@ -157,6 +173,14 @@ func TestRegisterTemplate(t *testing.T) {
 }
 
 func TestDeleteTemplate(t *testing.T) {
+	decodedBody := []byte(`^XA
+^FX Third section with bar code.
+^BY5,2,270
+^FO100,550^BC^FD12345678^FS
+^XZ
+`)
+	encodedBody := make([]byte, base64.RawStdEncoding.EncodedLen(len(decodedBody)))
+	base64.RawStdEncoding.Encode(encodedBody, decodedBody)
 	repo, err := NewMemory()
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
@@ -165,16 +189,12 @@ func TestDeleteTemplate(t *testing.T) {
 		Name: "label",
 	}
 	repo.StoreLabel(label)
-	svc := NewCommandSvc(repo)
+	q := &TestQueue{}
+	svc := NewCommandSvc(repo, q)
 	template := &Template{
 		LabelID: label.ID,
 		Type:    "ZPL",
-		Body: []byte(`^XA
-^FX Third section with bar code.
-^BY5,2,270
-^FO100,550^BC^FD12345678^FS
-^XZ
-`),
+		Body: encodedBody,
 	}
 
 	if err := repo.StoreTemplate(template); err != nil {

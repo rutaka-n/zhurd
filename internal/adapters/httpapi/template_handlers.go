@@ -3,11 +3,13 @@ package httpapi
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"zhurd/internal/label"
+
+	"github.com/gorilla/mux"
 )
 
 func listTemplatesHandler(svc label.QuerySvc) func(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +70,7 @@ func createTemplateHandler(svc label.CommandSvc) func(w http.ResponseWriter, r *
 		var cp label.CreateTemplate
 		if err := json.NewDecoder(r.Body).Decode(&cp); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
+			slog.Debug("cannot decode request body", "error", err)
 			return
 		}
 

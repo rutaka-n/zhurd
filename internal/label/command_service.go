@@ -1,10 +1,13 @@
 package label
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/go-playground/validator/v10"
+	"zhurd/internal/printer"
 )
 
 var ValidationError = errors.New("Validation error")
@@ -15,6 +18,10 @@ type StorerDeleter interface {
 	GetLabel(int64) (Label, error)
 	StoreTemplate(*Template) error
 	DeleteTemplate(int64, int64) error
+}
+
+type Queue interface {
+	Enqueue(printerID int64, document printer.Printable, quantity int, timeout time.Duration)
 }
 
 type CreateLabel struct {
@@ -30,12 +37,14 @@ type CreateTemplate struct {
 
 type CommandSvc struct {
 	db       StorerDeleter
+	queue    Queue
 	validate *validator.Validate
 }
 
-func NewCommandSvc(db StorerDeleter) CommandSvc {
+func NewCommandSvc(db StorerDeleter, queue Queue) CommandSvc {
 	return CommandSvc{
 		db:       db,
+		queue:    queue,
 		validate: validator.New(validator.WithRequiredStructEnabled()),
 	}
 }
@@ -67,7 +76,11 @@ func (svc CommandSvc) CreateTemplate(ct CreateTemplate) (Template, error) {
 	if _, err := svc.db.GetLabel(ct.LabelID); err != nil {
 		return Template{}, err
 	}
-	t, err := NewTemplate(ct.LabelID, ct.Type, ct.Body)
+	decodedBody := make([]byte, base64.RawStdEncoding.DecodedLen(len(ct.Body)))
+	if _, err := base64.RawStdEncoding.Decode(decodedBody, ct.Body); err != nil {
+		return Template{}, fmt.Errorf("%w: %w", ValidationError, err)
+	}
+	t, err := NewTemplate(ct.LabelID, ct.Type, decodedBody)
 	if err != nil {
 		return Template{}, fmt.Errorf("%w: %w", ValidationError, err)
 	}
@@ -84,5 +97,14 @@ func (svc CommandSvc) DeleteTemplate(labelID, templateID int64) error {
 }
 
 func (svc CommandSvc) Enqueue(labelID int64, enqueueLabel EnqueueLabel) error {
+	label, err := svc.db.GetLabel(labelID)
+	if err != nil {
+		return err
+	}
+	label.placeholders = make(map[string]string, len(enqueueLabel.Placeholders))
+	for _, ph := range enqueueLabel.Placeholders {
+		label.placeholders[ph.Name] = ph.Value
+	}
+	svc.queue.Enqueue(enqueueLabel.PrinterID, label, enqueueLabel.Quantity, enqueueLabel.Timeout)
 	return nil
 }

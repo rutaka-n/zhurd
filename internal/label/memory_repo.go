@@ -74,6 +74,14 @@ func (m *Memory) GetLabel(id int64) (Label, error) {
 	if err := json.Unmarshal(data, &l); err != nil {
 		return Label{}, err
 	}
+	tmplts, err := m.ListTemplates(id)
+	if err != nil {
+		return Label{}, err
+	}
+	l.templates = make(map[string]Template, len(tmplts))
+	for _, tmplt := range tmplts {
+		l.templates[tmplt.Type] = tmplt
+	}
 	return l, nil
 }
 

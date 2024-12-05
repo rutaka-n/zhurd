@@ -36,7 +36,7 @@ func New(queue *pq.Pooler) (*mux.Router, error) {
 	if err != nil {
 		return nil, err
 	}
-	labelCommandSvc := label.NewCommandSvc(labelRepo)
+	labelCommandSvc := label.NewCommandSvc(labelRepo, queue)
 	labelQuerySvc := label.NewQuerySvc(labelRepo)
 
 	v1r.HandleFunc("/labels", listLabelsHandler(labelQuerySvc)).Methods("GET")

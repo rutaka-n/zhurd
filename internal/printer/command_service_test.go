@@ -5,6 +5,18 @@ import (
 	"testing"
 )
 
+type TestQueue struct {
+	added int
+	deleted int
+}
+func (q *TestQueue) Add(printer Printer) {
+	q.added++
+}
+func (q *TestQueue) Delete(id int64) error {
+	q.deleted++
+	return nil
+}
+
 func TestRegister(t *testing.T) {
 	ucs := []struct {
 		desc        string
@@ -38,7 +50,8 @@ func TestRegister(t *testing.T) {
 			if err != nil {
 				t.Fatalf("got error: %s\n", err)
 			}
-			svc := NewCommandSvc(repo)
+			q := &TestQueue{}
+			svc := NewCommandSvc(repo, q)
 
 			p, err := svc.Create(us.cp)
 			if !errors.Is(err, us.expectedErr) {
@@ -64,7 +77,8 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
-	svc := NewCommandSvc(repo)
+	q := &TestQueue{}
+	svc := NewCommandSvc(repo, q)
 	printer := &Printer{
 		Addr: "0.0.0.0:8009",
 		Type: "ZPL",
