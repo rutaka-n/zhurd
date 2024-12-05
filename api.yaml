@@ -395,41 +395,22 @@ components:
           example: ZPL
         body:
           type: string
+          description: content of template encoded into base64
           example: |
-            ^XA
-            ^FX _comment1_
-            ^CF_font1_
-            ^FO_indentation_left_top1_^GC_circle_^FS
-            ^FO_indentation_left_top2_^GC_circle_^FS
-            ^FO_indentation_left_top3_^GC_circle_^FS
-            ^FO_indentation_left_top4_^GC_circle_^FS
-            ^FO_indentation_left_top5_^GC_circle_^FS
-            ^FO_indentation_left_top6_^FD_company_data1_^FS
-            ^CF_font2_
-            ^FO_indentation_left_top7_^FD_company_data2_^FS
-            ^FO_indentation_left_top8_^FD_company_data3_^FS
-            ^FO_indentation_left_top9_^FD_company_data4_^FS
-            ^FO_indentation_left_top10_^GB_rectangle1_^FS
-            ^FX _comment2_
-            ^CF_font3_
-            ^FO_indentation_left_top11_^FD_data5_^FS
-            ^FO_indentation_left_top12_^FD_data6_^FS
-            ^FO_indentation_left_top13_^FD_data7_^FS
-            ^CF_font4_
-            ^FO_indentation_left_top14_^GB_rectangle2_^FS
-            ^FX _comment3_
-            ^BY_band_
-            ^FO_indentation_left_top15_^BC^FD1234567890^FS
-            ^FX Fourth section (the two boxes on the bottom).
-            ^FO_indentation_left_top16_^GB_rectangle3_^FS
-            ^FO_indentation_left_top17_^GB_rectangle4_^FS
-            ^CF_font5_
-            ^FO_indentation_left_top18_^FD_data8_^FS
-            ^FO_indentation_left_top19_^FD_data9_^FS
-            ^FO_indentation_left_top20_^FD_data10_^FS
-            ^CF_font6_
-            ^FO_indentation_left_top21_^FD_data11_^FS
-            ^XZ
+            XlhBXkZYIFRvcCBzZWN0aW9uIHdpdGggY29tcGFueSBsb2dvLCBuYW1lIGFuZCBhZGRyZXNzLl5D
+            RjAsNjBeRk81NSw1NV5HQzEwMF5GU15GTzc1LDU1XkdDMTAwXkZTXkZPNzUsNzVeR0MxMDBeRlNe
+            Rk81NSw3NV5HQzEwMF5GU15GTzg4LDg4XkdDNTAsNTBeRlNeRk8yMjAsNTBeRkRMb3JlbSBJcHN1
+            bSwgSW5jLl5GU15DRjAsNDBeRk8yMjAsMTAwXkZEMTAwMCBTaGlwcGluZyBMYW5lXkZTXkZPMjIw
+            LDEzNV5GRFNoZWxieXZpbGxlIFROIDM4MTAyXkZTXkZPMjIwLDE3MF5GREVVUk8gVU5JT04gKEVV
+            KV5GU15GTzUwLDI1MF5HQjcwMCwxLDNeRlNeRlggU2Vjb25kIHNlY3Rpb24gd2l0aCByZWNpcGll
+            bnQgYWRkcmVzcyBhbmQgcGVybWl0IGluZm9ybWF0aW9uLl5DRkEsMzBeRk81MCwzMDBeRkRLYXJs
+            IE1hcmtzXkZTXkZPNTAsMzQwXkZEMTAwIE1haW4gU3RyZWV0XkZTXkZPNTAsMzgwXkZERVVSTyBV
+            TklPTiAoRVUpXkZTXkNGQSwxNV5GTzUwLDQ1MF5HQjcwMCwxLDNeRlNeRlggVGhpcmQgc2VjdGlv
+            biB3aXRoIGJhcmNvZGUuXkJZNSwyLDEyMF5GTzE3NSw1MDBeQkNeRkQxMjM0NTY3ODkwXkZTXkZY
+            IEZvdXJ0aCBzZWN0aW9uICh0aGUgdHdvIGJveGVzIG9uIHRoZSBib3R0b20pLl5GTzUwLDcwMF5H
+            QjcwMCwyNTAsM15GU15GTzQwMCw3MDBeR0IxLDI1MCwzXkZTXkNGMCw0MF5GTzEwMCw3NjBeRkRT
+            aGlwcGluZyBDdHIuIFk3NEgtMV5GU15GTzEwMCw4MDBeRkRSRUYxIEY5OUwxN15GU15GTzEwMCw4
+            NDBeRkRSRUYyIFlVSDg4XkZTXkNGMCwxOTBeRk80ODUsNzY1XkZEQUFeRlNeWFp+Cg==
     Templates:
       type: array
       items:
