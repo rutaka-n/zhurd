@@ -43,6 +43,16 @@ func (p *Pooler) Delete(id int64) error {
 	return q.Close()
 }
 
+func (p *Pooler) Enqueue(printerID int64, document printer.Printable, quantity int, timeout time.Duration) {
+	task := Task{
+		printerID: printerID,
+		Quantity:  quantity,
+		Timeout:   timeout,
+		Document:  document,
+	}
+	p.tasksCh <- task
+}
+
 func (p *Pooler) Run(ctx context.Context) {
 	slog.Debug("pooler started")
 	for {
@@ -70,6 +80,16 @@ func (p *Pooler) Run(ctx context.Context) {
 			err := q.Close()
 			if err != nil {
 				slog.Error("closing queue", "printerID", q.printer.ID, "error", err)
+			}
+		case task := <-p.tasksCh:
+			slog.Debug("pooler: got task to enqueue", "task", task)
+			q, ok := p.queues[task.printerID]
+			if !ok {
+				slog.Warn("trying to enqueue document for printer that are not exists, ignoring", "printerID", task.printerID)
+				continue
+			}
+			if err := q.Enqueue(task); err != nil {
+				slog.Warn("cannot enqueue task", "error", err)
 			}
 		case <-ctx.Done():
 			for _, q := range p.queues {

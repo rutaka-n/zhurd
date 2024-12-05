@@ -2,20 +2,18 @@ package printingqueue
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
 	"zhurd/internal/printer"
 )
 
-type Printable interface {
-	Print(pType string) ([]byte, error)
-}
-
 type Task struct {
-	Quantity int
-	Timeout  time.Duration
-	Document Printable
+	printerID int64
+	Quantity  int
+	Timeout   time.Duration
+	Document  printer.Printable
 }
 
 type Queue struct {
@@ -32,8 +30,13 @@ func New(printer printer.Printer, size int) *Queue {
 	}
 }
 
-func (q *Queue) Enqueue(task Task) {
-	q.q <- task
+func (q *Queue) Enqueue(task Task) error {
+	select {
+	case q.q <- task:
+	default:
+		return fmt.Errorf("cannot enqueue task, queue already full")
+	}
+	return nil
 }
 
 func (q *Queue) Close() error {
