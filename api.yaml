@@ -396,21 +396,7 @@ components:
         body:
           type: string
           description: content of template encoded into base64
-          example: |
-            XlhBXkZYIFRvcCBzZWN0aW9uIHdpdGggY29tcGFueSBsb2dvLCBuYW1lIGFuZCBhZGRyZXNzLl5D
-            RjAsNjBeRk81NSw1NV5HQzEwMF5GU15GTzc1LDU1XkdDMTAwXkZTXkZPNzUsNzVeR0MxMDBeRlNe
-            Rk81NSw3NV5HQzEwMF5GU15GTzg4LDg4XkdDNTAsNTBeRlNeRk8yMjAsNTBeRkRMb3JlbSBJcHN1
-            bSwgSW5jLl5GU15DRjAsNDBeRk8yMjAsMTAwXkZEMTAwMCBTaGlwcGluZyBMYW5lXkZTXkZPMjIw
-            LDEzNV5GRFNoZWxieXZpbGxlIFROIDM4MTAyXkZTXkZPMjIwLDE3MF5GREVVUk8gVU5JT04gKEVV
-            KV5GU15GTzUwLDI1MF5HQjcwMCwxLDNeRlNeRlggU2Vjb25kIHNlY3Rpb24gd2l0aCByZWNpcGll
-            bnQgYWRkcmVzcyBhbmQgcGVybWl0IGluZm9ybWF0aW9uLl5DRkEsMzBeRk81MCwzMDBeRkRLYXJs
-            IE1hcmtzXkZTXkZPNTAsMzQwXkZEMTAwIE1haW4gU3RyZWV0XkZTXkZPNTAsMzgwXkZERVVSTyBV
-            TklPTiAoRVUpXkZTXkNGQSwxNV5GTzUwLDQ1MF5HQjcwMCwxLDNeRlNeRlggVGhpcmQgc2VjdGlv
-            biB3aXRoIGJhcmNvZGUuXkJZNSwyLDEyMF5GTzE3NSw1MDBeQkNeRkQxMjM0NTY3ODkwXkZTXkZY
-            IEZvdXJ0aCBzZWN0aW9uICh0aGUgdHdvIGJveGVzIG9uIHRoZSBib3R0b20pLl5GTzUwLDcwMF5H
-            QjcwMCwyNTAsM15GU15GTzQwMCw3MDBeR0IxLDI1MCwzXkZTXkNGMCw0MF5GTzEwMCw3NjBeRkRT
-            aGlwcGluZyBDdHIuIFk3NEgtMV5GU15GTzEwMCw4MDBeRkRSRUYxIEY5OUwxN15GU15GTzEwMCw4
-            NDBeRkRSRUYyIFlVSDg4XkZTXkNGMCwxOTBeRk80ODUsNzY1XkZEQUFeRlNeWFp+Cg==
+          example: XlhBCl5GWCBUaGlyZCBzZWN0aW9uIHdpdGggYmFyIGNvZGUuCl5CWTUsMiwyNzAKXkZPMTAwLDU1MF5CQ15GRDEyMzQ1Njc4XkZTCl5YWgo=
     Templates:
       type: array
       items:
