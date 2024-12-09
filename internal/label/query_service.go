@@ -30,8 +30,8 @@ func (svc QuerySvc) GetTemplate(labelID, templateID int64) (Template, error) {
 	if err != nil {
 		return Template{}, err
 	}
-	encoded := make([]byte, base64.RawStdEncoding.EncodedLen(len(tmplt.Body)))
-	base64.RawStdEncoding.Encode(encoded, tmplt.Body)
+	encoded := make([]byte, base64.StdEncoding.EncodedLen(len(tmplt.Body)))
+	base64.StdEncoding.Encode(encoded, tmplt.Body)
 	tmplt.Body = encoded
 	return tmplt, nil
 }
@@ -42,8 +42,8 @@ func (svc QuerySvc) ListTemplates(labelID int64) ([]Template, error) {
 		return nil, err
 	}
 	for i := range tmplts {
-		encoded := make([]byte, base64.RawStdEncoding.EncodedLen(len(tmplts[i].Body)))
-		base64.RawStdEncoding.Encode(encoded, tmplts[i].Body)
+		encoded := make([]byte, base64.StdEncoding.EncodedLen(len(tmplts[i].Body)))
+		base64.StdEncoding.Encode(encoded, tmplts[i].Body)
 		tmplts[i].Body = encoded
 	}
 

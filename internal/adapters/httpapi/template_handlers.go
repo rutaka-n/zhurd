@@ -67,8 +67,8 @@ func createTemplateHandler(svc label.CommandSvc) func(w http.ResponseWriter, r *
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		var cp label.CreateTemplate
-		if err := json.NewDecoder(r.Body).Decode(&cp); err != nil {
+		var ct label.CreateTemplate
+		if err := json.NewDecoder(r.Body).Decode(&ct); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			slog.Debug("cannot decode request body", "error", err)
 			return
@@ -77,14 +77,16 @@ func createTemplateHandler(svc label.CommandSvc) func(w http.ResponseWriter, r *
 		labelID, err := getLabelID(r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
+			slog.Debug("cannot find label ID", "error", err)
 			return
 		}
-		cp.LabelID = labelID
+		ct.LabelID = labelID
 
-		pr, err := svc.CreateTemplate(cp)
+		pr, err := svc.CreateTemplate(ct)
 		if err != nil {
 			if errors.Is(err, label.ValidationError) {
 				w.WriteHeader(http.StatusBadRequest)
+				slog.Warn("template validation error", "error", err)
 				return
 			}
 			w.WriteHeader(http.StatusInternalServerError)

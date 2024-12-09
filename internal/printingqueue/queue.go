@@ -31,6 +31,7 @@ func New(printer printer.Printer, size int) *Queue {
 }
 
 func (q *Queue) Enqueue(task Task) error {
+	slog.Debug("queue: got task to enqueue", "task", task)
 	select {
 	case q.q <- task:
 	default:
@@ -55,6 +56,7 @@ func (q *Queue) Process(ctx context.Context) error {
 	for {
 		select {
 		case task := <-q.q:
+			slog.Debug("queue: got task to process", "task", task)
 			if !q.printer.IsConnected() {
 				slog.Debug("printer is not connectied, try to connect", "printerID", q.printer.ID)
 				if err := q.printer.Connect(); err != nil {

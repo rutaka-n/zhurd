@@ -120,8 +120,8 @@ func TestGetTemplate(t *testing.T) {
 ^FO100,550^BC^FD12345678^FS
 ^XZ
 `)
-	encodedBody := make([]byte, base64.RawStdEncoding.EncodedLen(len(decodedBody)))
-	base64.RawStdEncoding.Encode(encodedBody, decodedBody)
+	encodedBody := make([]byte, base64.StdEncoding.EncodedLen(len(decodedBody)))
+	base64.StdEncoding.Encode(encodedBody, decodedBody)
 	repo, err := NewMemory()
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)

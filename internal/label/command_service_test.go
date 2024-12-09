@@ -1,7 +1,6 @@
 package label
 
 import (
-	"encoding/base64"
 	"errors"
 	"slices"
 	"testing"
@@ -100,8 +99,6 @@ func TestRegisterTemplate(t *testing.T) {
 ^FO100,550^BC^FD12345678^FS
 ^XZ
 `)
-	encodedBody := make([]byte, base64.RawStdEncoding.EncodedLen(len(decodedBody)))
-	base64.RawStdEncoding.Encode(encodedBody, decodedBody)
 	ucs := []struct {
 		desc        string
 		ct          CreateTemplate
@@ -111,7 +108,7 @@ func TestRegisterTemplate(t *testing.T) {
 			desc: "happy path",
 			ct: CreateTemplate{
 				Type: "ZPL",
-				Body: encodedBody,
+				Body: decodedBody,
 			},
 			expectedErr: nil,
 		},
@@ -119,7 +116,7 @@ func TestRegisterTemplate(t *testing.T) {
 			desc: "empty type",
 			ct: CreateTemplate{
 				Type: "",
-				Body: encodedBody,
+				Body: decodedBody,
 			},
 			expectedErr: ValidationError,
 		},
@@ -160,12 +157,8 @@ func TestRegisterTemplate(t *testing.T) {
 				if tmplt.Type != us.ct.Type {
 					t.Errorf("expected: %v, got: %v\n", us.ct.Type, tmplt.Type)
 				}
-				decoded := make([]byte, base64.RawStdEncoding.DecodedLen(len(us.ct.Body)))
-				if _, err := base64.RawStdEncoding.Decode(decoded, us.ct.Body); err != nil {
-					t.Fatalf("got error: %s\n", err)
-				}
-				if !slices.Equal(tmplt.Body, decoded) {
-					t.Errorf("expected: %v, got: %v\n", decoded, tmplt.Body)
+				if !slices.Equal(tmplt.Body, us.ct.Body) {
+					t.Errorf("expected: %v, got: %v\n", us.ct.Body, tmplt.Body)
 				}
 			}
 		})
@@ -179,8 +172,6 @@ func TestDeleteTemplate(t *testing.T) {
 ^FO100,550^BC^FD12345678^FS
 ^XZ
 `)
-	encodedBody := make([]byte, base64.RawStdEncoding.EncodedLen(len(decodedBody)))
-	base64.RawStdEncoding.Encode(encodedBody, decodedBody)
 	repo, err := NewMemory()
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
@@ -194,7 +185,7 @@ func TestDeleteTemplate(t *testing.T) {
 	template := &Template{
 		LabelID: label.ID,
 		Type:    "ZPL",
-		Body: encodedBody,
+		Body:    decodedBody,
 	}
 
 	if err := repo.StoreTemplate(template); err != nil {
@@ -208,5 +199,49 @@ func TestDeleteTemplate(t *testing.T) {
 	_, err = repo.GetTemplate(template.LabelID, template.ID)
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("expected: %v, got: %v\n", ErrNotFound, err)
+	}
+}
+
+func TestEnqueue(t *testing.T) {
+	decodedBody := []byte(`^XA
+^FX Third section with bar code.
+^BY5,2,270
+^FO100,550^BC^FD12345678^FS
+^XZ
+`)
+	repo, err := NewMemory()
+	if err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+	label := &Label{
+		Name: "label",
+	}
+	repo.StoreLabel(label)
+	q := &TestQueue{}
+	svc := NewCommandSvc(repo, q)
+	template := &Template{
+		LabelID: label.ID,
+		Type:    "ZPL",
+		Body:    decodedBody,
+	}
+
+	if err := repo.StoreTemplate(template); err != nil {
+		t.Fatalf("got error: %s\n", err)
+	}
+
+	if q.enqueued != 0 {
+		t.Fatalf("expect enqueued tasks: %d, got: %d\n", 0, q.enqueued)
+	}
+
+	enc := EnqueueLabel{
+		PrinterID: 1,
+		Quantity: 1,
+		Timeout: time.Second,
+		Placeholders: []Placeholder{},
+	}
+
+	svc.Enqueue(label.ID, enc)
+	if q.enqueued != 1 {
+		t.Fatalf("expect enqueued tasks: %d, got: %d\n", 1, q.enqueued)
 	}
 }

@@ -1,13 +1,13 @@
 package label
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"zhurd/internal/printer"
+
+	"github.com/go-playground/validator/v10"
 )
 
 var ValidationError = errors.New("Validation error")
@@ -76,11 +76,7 @@ func (svc CommandSvc) CreateTemplate(ct CreateTemplate) (Template, error) {
 	if _, err := svc.db.GetLabel(ct.LabelID); err != nil {
 		return Template{}, err
 	}
-	decodedBody := make([]byte, base64.RawStdEncoding.DecodedLen(len(ct.Body)))
-	if _, err := base64.RawStdEncoding.Decode(decodedBody, ct.Body); err != nil {
-		return Template{}, fmt.Errorf("%w: %w", ValidationError, err)
-	}
-	t, err := NewTemplate(ct.LabelID, ct.Type, decodedBody)
+	t, err := NewTemplate(ct.LabelID, ct.Type, ct.Body)
 	if err != nil {
 		return Template{}, fmt.Errorf("%w: %w", ValidationError, err)
 	}
