@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"io"
 	"log/slog"
@@ -17,12 +18,25 @@ import (
 	pq "zhurd/internal/printingqueue"
 )
 
+var cfgFilePath string
+
+func init() {
+	const (
+		defaultConfig = ".config.json"
+		usage         = "path to json configuration file"
+	)
+	flag.StringVar(&cfgFilePath, "config", defaultConfig, usage)
+	flag.StringVar(&cfgFilePath, "c", defaultConfig, usage+" (shorthand)")
+}
+
 func main() {
 	// use NotifyContext for gracefull shutdown
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	cfgFile, err := os.Open("./share/config.json.example")
+	flag.Parse()
+
+	cfgFile, err := os.Open(cfgFilePath)
 	if err != nil {
 		panic(err)
 	}
