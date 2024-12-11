@@ -22,7 +22,7 @@ var cfgFilePath string
 
 func init() {
 	const (
-		defaultConfig = ".config.json"
+		defaultConfig = "./config.json"
 		usage         = "path to json configuration file"
 	)
 	flag.StringVar(&cfgFilePath, "config", defaultConfig, usage)
@@ -50,8 +50,6 @@ func main() {
 	}
 
 	// TODO: read printer from DB on startup to add queues
-	// TODO: pass pooler into printer.CommandSvc as dependecy to add and delete printers queues
-	// TODO: add enqueue endpoint that send document to printer
 	pooler := pq.NewPooler(cfg.Server.QueueBufferSize)
 	wg := sync.WaitGroup{}
 	wg.Add(1)
