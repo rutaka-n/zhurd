@@ -20,9 +20,20 @@ type Server struct {
 	QueueBufferSize    int    `json:"queue_buffer_size"`
 }
 
+// Databse contains all configuration for database connection.
+type Database struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	Name     string `json:"name"`
+	SSLMode  string `json:"ssl_mode"`
+}
+
 // Config is a high-level struct that contains all configuration.
 type Config struct {
-	Server Server `json:"server"`
+	Server   Server   `json:"server"`
+	Database Database `json:"database"`
 }
 
 // Load configuration from file.
