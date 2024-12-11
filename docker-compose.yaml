@@ -1,0 +1,29 @@
+services:
+  zhurd:
+    build: .
+    ports:
+      - "3003:3003"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17.2
+    restart: always
+    user: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=zhurd
+      - POSTGRES_DB=zhurd
+      - POSTGRES_PASSWORD=passwordsecretdb
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready --username=zhurd" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
