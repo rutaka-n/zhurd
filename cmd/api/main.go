@@ -68,8 +68,6 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		// ctx, cancel := context.WithCancel(ctx)
-		// defer cancel()
 		pooler.Run(ctx)
 	}()
 
