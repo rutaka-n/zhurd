@@ -70,4 +70,10 @@ func TestLoad(t *testing.T) {
 	if cfg.Database.SSLMode != "disable" {
 		t.Errorf("expected %s, got %s\n", "disable", cfg.Database.SSLMode)
 	}
+	if cfg.Database.ConnectionString() != "host=localhost port=5432 user=zhurd password=passwordsecretdb dbname=zhurd sslmode=disable" {
+		t.Errorf("expected %s, got %s\n",
+			"host=localhost port=5432 user=zhurd password=passwordsecretdb dbname=zhurd sslmode=disable",
+			cfg.Database.ConnectionString(),
+		)
+	}
 }

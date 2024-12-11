@@ -16,6 +16,8 @@ import (
 	"zhurd/internal/adapters/httpapi"
 	"zhurd/internal/config"
 	pq "zhurd/internal/printingqueue"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var cfgFilePath string
@@ -47,6 +49,17 @@ func main() {
 
 	if err := initLogger(cfg.Server.Logger); err != nil {
 		panic(err)
+	}
+
+	// database connection
+	var dbPool *pgxpool.Pool
+	if len(cfg.Database.ConnectionString()) > 0 {
+		slog.Info("try connect to database...")
+		dbPool, err = pgxpool.New(context.Background(), cfg.Database.ConnectionString())
+		if err != nil {
+			slog.Error("unable to connect to database", "error", err)
+		}
+		defer dbPool.Close()
 	}
 
 	// TODO: read printer from DB on startup to add queues

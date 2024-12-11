@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 )
 
@@ -28,6 +29,21 @@ type Database struct {
 	Password string `json:"password"`
 	Name     string `json:"name"`
 	SSLMode  string `json:"ssl_mode"`
+}
+
+func (cfg *Database) ConnectionString() string {
+	if cfg.Host == "" ||
+		cfg.Port == 0 ||
+		cfg.User == "" ||
+		cfg.Password == "" ||
+		cfg.Name == "" ||
+		cfg.SSLMode == "" {
+		return ""
+	}
+	return fmt.Sprintf(
+		"host=%s port=%v user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Name, cfg.SSLMode,
+	)
 }
 
 // Config is a high-level struct that contains all configuration.
