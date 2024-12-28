@@ -84,7 +84,7 @@ paths:
         - labels
       responses:
         '200':
-          description: An paged array of lables
+          description: An paged array of labels
           content:
             application/json:
               schema:
@@ -147,7 +147,7 @@ paths:
           description: No content
   /labels/{labelID}/enqueue:
     post:
-      summary: Enqueue lable to print
+      summary: Enqueue label to print
       operationId: enqueueLabelToPrint
       tags:
         - labels
@@ -172,7 +172,7 @@ paths:
           description: Not found
   /labels/{labelID}/templates:
     get:
-      summary: List all tamplates
+      summary: List all templates
       operationId: listTemplates
       tags:
         - templates

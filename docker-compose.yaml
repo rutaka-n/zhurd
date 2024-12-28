@@ -4,8 +4,7 @@ services:
     ports:
       - "3003:3003"
     depends_on:
-      db:
-        condition: service_healthy
+      - migrator
 
   db:
     image: postgres:17.2
@@ -24,6 +23,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  migrator:
+    build: 
+      context: .
+      dockerfile: ./dbmigrations/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./dbmigrations:/dbmigrations/
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_MIGRATION_DIR: ./dbmigrations
+      GOOSE_DBSTRING: "postgres://zhurd:passwordsecretdb@db:5432/zhurd?sslmode=disable"
 
 volumes:
   db-data:
