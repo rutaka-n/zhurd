@@ -21,13 +21,17 @@ type printerRepo interface {
 	printer.StorerDeleter
 }
 
+type labelRepo interface {
+	label.GetterLister
+	label.StorerDeleter
+}
+
 func New(dbPool *pgxpool.Pool, queue *pq.Pooler) (*mux.Router, error) {
 	r := mux.NewRouter()
 	r.HandleFunc("/", defaultHandler)
 	v1r := r.PathPrefix("/v1").Subrouter()
 
 	// printer
-
 	var err error
 	var pRepo printerRepo
 	if dbPool != nil {
@@ -58,12 +62,20 @@ func New(dbPool *pgxpool.Pool, queue *pq.Pooler) (*mux.Router, error) {
 	v1r.HandleFunc("/printers/{printerID}", deletePrinterByIDHandler(printerCommandSvc)).Methods("DELETE")
 
 	// label
-	labelRepo, err := label.NewMemory()
-	if err != nil {
-		return nil, err
+	var lRepo labelRepo
+	if dbPool != nil {
+		lRepo, err = label.NewPSQL(dbPool)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		lRepo, err = label.NewMemory()
+		if err != nil {
+			return nil, err
+		}
 	}
-	labelCommandSvc := label.NewCommandSvc(labelRepo, queue)
-	labelQuerySvc := label.NewQuerySvc(labelRepo)
+	labelCommandSvc := label.NewCommandSvc(lRepo, queue)
+	labelQuerySvc := label.NewQuerySvc(lRepo)
 
 	v1r.HandleFunc("/labels", listLabelsHandler(labelQuerySvc)).Methods("GET")
 	v1r.HandleFunc("/labels/{labelID}", showLabelByIDHandler(labelQuerySvc)).Methods("GET")

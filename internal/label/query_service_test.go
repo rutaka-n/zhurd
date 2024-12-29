@@ -1,6 +1,7 @@
 package label
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"slices"
@@ -17,7 +18,7 @@ func TestGetLabel(t *testing.T) {
 		Name:    "label",
 		Comment: "test label",
 	}
-	err = repo.StoreLabel(label)
+	err = repo.StoreLabel(context.Background(), label)
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
@@ -53,7 +54,7 @@ func TestGetLabel(t *testing.T) {
 		t.Run(us.desc, func(t *testing.T) {
 			svc := NewQuerySvc(repo)
 
-			p, err := svc.GetLabel(us.labelID)
+			p, err := svc.GetLabel(context.Background(), us.labelID)
 			if !errors.Is(err, us.expectedErr) {
 				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
 			}
@@ -77,7 +78,7 @@ func TestListLabel(t *testing.T) {
 	svc := NewQuerySvc(repo)
 
 	// list empty storage
-	result, err := svc.ListLabels()
+	result, err := svc.ListLabels(context.Background())
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
@@ -97,14 +98,14 @@ func TestListLabel(t *testing.T) {
 	}
 	for i := range labels {
 		label := &labels[i]
-		err = repo.StoreLabel(label)
+		err = repo.StoreLabel(context.Background(), label)
 		if err != nil {
 			t.Fatalf("got error: %s\n", err)
 		}
 	}
 
 	// list all labels in storage
-	result, err = svc.ListLabels()
+	result, err = svc.ListLabels(context.Background())
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
@@ -129,14 +130,14 @@ func TestGetTemplate(t *testing.T) {
 	label := &Label{
 		Name: "label",
 	}
-	repo.StoreLabel(label)
+	repo.StoreLabel(context.Background(), label)
 
 	template := &Template{
 		LabelID: label.ID,
 		Type:    "ZPL-II",
-		Body: decodedBody,
+		Body:    decodedBody,
 	}
-	err = repo.StoreTemplate(template)
+	err = repo.StoreTemplate(context.Background(), template)
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
@@ -172,7 +173,7 @@ func TestGetTemplate(t *testing.T) {
 		t.Run(us.desc, func(t *testing.T) {
 			svc := NewQuerySvc(repo)
 
-			tmplt, err := svc.GetTemplate(template.LabelID, us.templateID)
+			tmplt, err := svc.GetTemplate(context.Background(), template.LabelID, us.templateID)
 			if !errors.Is(err, us.expectedErr) {
 				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
 			}
@@ -196,11 +197,11 @@ func TestListTemplate(t *testing.T) {
 	label := &Label{
 		Name: "label",
 	}
-	repo.StoreLabel(label)
+	repo.StoreLabel(context.Background(), label)
 	svc := NewQuerySvc(repo)
 
 	// list empty storage
-	result, err := svc.ListTemplates(1)
+	result, err := svc.ListTemplates(context.Background(), 1)
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
@@ -232,14 +233,14 @@ func TestListTemplate(t *testing.T) {
 	}
 	for i := range templates {
 		template := &templates[i]
-		err = repo.StoreTemplate(template)
+		err = repo.StoreTemplate(context.Background(), template)
 		if err != nil {
 			t.Fatalf("got error: %s\n", err)
 		}
 	}
 
 	// list all templates in storage
-	result, err = svc.ListTemplates(label.ID)
+	result, err = svc.ListTemplates(context.Background(), label.ID)
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}

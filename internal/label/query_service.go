@@ -1,12 +1,15 @@
 package label
 
-import "encoding/base64"
+import (
+	"context"
+	"encoding/base64"
+)
 
 type GetterLister interface {
-	GetLabel(int64) (Label, error)
-	ListLabels() ([]Label, error)
-	GetTemplate(int64, int64) (Template, error)
-	ListTemplates(int64) ([]Template, error)
+	GetLabel(context.Context, int64) (Label, error)
+	ListLabels(context.Context) ([]Label, error)
+	GetTemplate(context.Context, int64, int64) (Template, error)
+	ListTemplates(context.Context, int64) ([]Template, error)
 }
 
 type QuerySvc struct {
@@ -17,16 +20,16 @@ func NewQuerySvc(db GetterLister) QuerySvc {
 	return QuerySvc{db: db}
 }
 
-func (svc QuerySvc) GetLabel(labelID int64) (Label, error) {
-	return svc.db.GetLabel(labelID)
+func (svc QuerySvc) GetLabel(ctx context.Context, labelID int64) (Label, error) {
+	return svc.db.GetLabel(ctx, labelID)
 }
 
-func (svc QuerySvc) ListLabels() ([]Label, error) {
-	return svc.db.ListLabels()
+func (svc QuerySvc) ListLabels(ctx context.Context) ([]Label, error) {
+	return svc.db.ListLabels(ctx)
 }
 
-func (svc QuerySvc) GetTemplate(labelID, templateID int64) (Template, error) {
-	tmplt, err := svc.db.GetTemplate(labelID, templateID)
+func (svc QuerySvc) GetTemplate(ctx context.Context, labelID, templateID int64) (Template, error) {
+	tmplt, err := svc.db.GetTemplate(ctx, labelID, templateID)
 	if err != nil {
 		return Template{}, err
 	}
@@ -36,8 +39,8 @@ func (svc QuerySvc) GetTemplate(labelID, templateID int64) (Template, error) {
 	return tmplt, nil
 }
 
-func (svc QuerySvc) ListTemplates(labelID int64) ([]Template, error) {
-	tmplts, err :=  svc.db.ListTemplates(labelID)
+func (svc QuerySvc) ListTemplates(ctx context.Context, labelID int64) ([]Template, error) {
+	tmplts, err := svc.db.ListTemplates(ctx, labelID)
 	if err != nil {
 		return nil, err
 	}

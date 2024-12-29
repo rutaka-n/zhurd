@@ -3,18 +3,21 @@ package httpapi
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"zhurd/internal/label"
+
+	"github.com/gorilla/mux"
 )
 
 func listLabelsHandler(svc label.QuerySvc) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		labels, err := svc.ListLabels()
+		labels, err := svc.ListLabels(r.Context())
 		if err != nil {
+			slog.Error("cannot list labels", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -29,16 +32,18 @@ func showLabelByIDHandler(svc label.QuerySvc) func(w http.ResponseWriter, r *htt
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		labelID, err := getLabelID(r)
 		if err != nil {
+			slog.Error("cannot parse labelID", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		pr, err := svc.GetLabel(labelID)
+		pr, err := svc.GetLabel(r.Context(), labelID)
 		if err != nil {
 			if errors.Is(err, label.ErrNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
+			slog.Error("cannot get label", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -54,13 +59,15 @@ func createLabelHandler(svc label.CommandSvc) func(w http.ResponseWriter, r *htt
 
 		var cp label.CreateLabel
 		if err := json.NewDecoder(r.Body).Decode(&cp); err != nil {
+			slog.Error("cannot parse request", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		pr, err := svc.CreateLabel(cp)
+		pr, err := svc.CreateLabel(r.Context(), cp)
 		if err != nil {
 			if errors.Is(err, label.ValidationError) {
+				slog.Error("validation error", "error", err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -78,15 +85,17 @@ func deleteLabelByIDHandler(svc label.CommandSvc) func(w http.ResponseWriter, r 
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		labelID, err := getLabelID(r)
 		if err != nil {
+			slog.Error("cannot get labelID", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		if err := svc.DeleteLabel(labelID); err != nil {
+		if err := svc.DeleteLabel(r.Context(), labelID); err != nil {
 			if errors.Is(err, label.ErrNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
+			slog.Error("cannot delete label", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -100,21 +109,25 @@ func enqueueLabelHandler(svc label.CommandSvc) func(w http.ResponseWriter, r *ht
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		labelID, err := getLabelID(r)
 		if err != nil {
+			slog.Error("cannot get labelID", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		var enqueueLabel label.EnqueueLabel
 		if err := json.NewDecoder(r.Body).Decode(&enqueueLabel); err != nil {
+			slog.Error("cannot parse request", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		if err := svc.Enqueue(labelID, enqueueLabel); err != nil {
+		if err := svc.Enqueue(r.Context(), labelID, enqueueLabel); err != nil {
 			if errors.Is(err, label.ValidationError) {
+				slog.Error("validation error", "error", err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
+			slog.Error("cannot enqueue label", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

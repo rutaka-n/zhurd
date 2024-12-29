@@ -1,6 +1,7 @@
 package label
 
 import (
+	"context"
 	"errors"
 	"slices"
 	"testing"
@@ -50,7 +51,7 @@ func TestRegisterLabel(t *testing.T) {
 			q := &TestQueue{}
 			svc := NewCommandSvc(repo, q)
 
-			l, err := svc.CreateLabel(us.cl)
+			l, err := svc.CreateLabel(context.Background(), us.cl)
 			if !errors.Is(err, us.expectedErr) {
 				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
 			}
@@ -78,15 +79,15 @@ func TestDeleteLabel(t *testing.T) {
 		Comment: "test label",
 	}
 
-	if err := repo.StoreLabel(label); err != nil {
+	if err := repo.StoreLabel(context.Background(), label); err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
 
-	if err := svc.DeleteLabel(label.ID); err != nil {
+	if err := svc.DeleteLabel(context.Background(), label.ID); err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
 
-	_, err = repo.GetLabel(label.ID)
+	_, err = repo.GetLabel(context.Background(), label.ID)
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("expected: %v, got: %v\n", ErrNotFound, err)
 	}
@@ -144,12 +145,12 @@ func TestRegisterTemplate(t *testing.T) {
 				Comment: "test label",
 			}
 
-			if err := repo.StoreLabel(label); err != nil {
+			if err := repo.StoreLabel(context.Background(), label); err != nil {
 				t.Fatalf("got error: %s\n", err)
 			}
 
 			us.ct.LabelID = label.ID
-			tmplt, err := svc.CreateTemplate(us.ct)
+			tmplt, err := svc.CreateTemplate(context.Background(), us.ct)
 			if !errors.Is(err, us.expectedErr) {
 				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
 			}
@@ -179,7 +180,7 @@ func TestDeleteTemplate(t *testing.T) {
 	label := &Label{
 		Name: "label",
 	}
-	repo.StoreLabel(label)
+	repo.StoreLabel(context.Background(), label)
 	q := &TestQueue{}
 	svc := NewCommandSvc(repo, q)
 	template := &Template{
@@ -188,15 +189,15 @@ func TestDeleteTemplate(t *testing.T) {
 		Body:    decodedBody,
 	}
 
-	if err := repo.StoreTemplate(template); err != nil {
+	if err := repo.StoreTemplate(context.Background(), template); err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
 
-	if err := svc.DeleteTemplate(template.LabelID, template.ID); err != nil {
+	if err := svc.DeleteTemplate(context.Background(), template.LabelID, template.ID); err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
 
-	_, err = repo.GetTemplate(template.LabelID, template.ID)
+	_, err = repo.GetTemplate(context.Background(), template.LabelID, template.ID)
 	if !errors.Is(err, ErrNotFound) {
 		t.Errorf("expected: %v, got: %v\n", ErrNotFound, err)
 	}
@@ -216,7 +217,7 @@ func TestEnqueue(t *testing.T) {
 	label := &Label{
 		Name: "label",
 	}
-	repo.StoreLabel(label)
+	repo.StoreLabel(context.Background(), label)
 	q := &TestQueue{}
 	svc := NewCommandSvc(repo, q)
 	template := &Template{
@@ -225,7 +226,7 @@ func TestEnqueue(t *testing.T) {
 		Body:    decodedBody,
 	}
 
-	if err := repo.StoreTemplate(template); err != nil {
+	if err := repo.StoreTemplate(context.Background(), template); err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
 
@@ -234,13 +235,13 @@ func TestEnqueue(t *testing.T) {
 	}
 
 	enc := EnqueueLabel{
-		PrinterID: 1,
-		Quantity: 1,
-		Timeout: time.Second,
+		PrinterID:    1,
+		Quantity:     1,
+		Timeout:      time.Second,
 		Placeholders: []Placeholder{},
 	}
 
-	svc.Enqueue(label.ID, enc)
+	svc.Enqueue(context.Background(), label.ID, enc)
 	if q.enqueued != 1 {
 		t.Fatalf("expect enqueued tasks: %d, got: %d\n", 1, q.enqueued)
 	}

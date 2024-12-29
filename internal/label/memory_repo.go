@@ -1,6 +1,7 @@
 package label
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"sync"
@@ -28,7 +29,7 @@ func NewMemory() (*Memory, error) {
 	}, nil
 }
 
-func (m *Memory) StoreLabel(l *Label) error {
+func (m *Memory) StoreLabel(ctx context.Context, l *Label) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if l.ID == 0 {
@@ -48,7 +49,7 @@ func (m *Memory) StoreLabel(l *Label) error {
 	return nil
 }
 
-func (m *Memory) ListLabels() ([]Label, error) {
+func (m *Memory) ListLabels(ctx context.Context) ([]Label, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	labels := make([]Label, 0, len(m.labels))
@@ -63,7 +64,7 @@ func (m *Memory) ListLabels() ([]Label, error) {
 	return labels, nil
 }
 
-func (m *Memory) GetLabel(id int64) (Label, error) {
+func (m *Memory) GetLabel(ctx context.Context, id int64) (Label, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	data, ok := m.labels[id]
@@ -74,7 +75,7 @@ func (m *Memory) GetLabel(id int64) (Label, error) {
 	if err := json.Unmarshal(data, &l); err != nil {
 		return Label{}, err
 	}
-	tmplts, err := m.ListTemplates(id)
+	tmplts, err := m.ListTemplates(ctx, id)
 	if err != nil {
 		return Label{}, err
 	}
@@ -85,7 +86,7 @@ func (m *Memory) GetLabel(id int64) (Label, error) {
 	return l, nil
 }
 
-func (m *Memory) DeleteLabel(id int64) error {
+func (m *Memory) DeleteLabel(ctx context.Context, id int64) error {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	if _, ok := m.labels[id]; !ok {
@@ -95,7 +96,7 @@ func (m *Memory) DeleteLabel(id int64) error {
 	return nil
 }
 
-func (m *Memory) StoreTemplate(t *Template) error {
+func (m *Memory) StoreTemplate(ctx context.Context, t *Template) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if t.ID == 0 {
@@ -115,7 +116,7 @@ func (m *Memory) StoreTemplate(t *Template) error {
 	return nil
 }
 
-func (m *Memory) ListTemplates(labelID int64) ([]Template, error) {
+func (m *Memory) ListTemplates(ctx context.Context, labelID int64) ([]Template, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	templates := make([]Template, 0, len(m.templates))
@@ -132,7 +133,7 @@ func (m *Memory) ListTemplates(labelID int64) ([]Template, error) {
 	return templates, nil
 }
 
-func (m *Memory) GetTemplate(labelID, id int64) (Template, error) {
+func (m *Memory) GetTemplate(ctx context.Context, labelID, id int64) (Template, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	data, ok := m.templates[id]
@@ -150,7 +151,7 @@ func (m *Memory) GetTemplate(labelID, id int64) (Template, error) {
 	return t, nil
 }
 
-func (m *Memory) DeleteTemplate(labelID, templateID int64) error {
+func (m *Memory) DeleteTemplate(ctx context.Context, labelID, templateID int64) error {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	val, ok := m.templates[templateID]

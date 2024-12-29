@@ -18,12 +18,14 @@ func listTemplatesHandler(svc label.QuerySvc) func(w http.ResponseWriter, r *htt
 
 		labelID, err := getLabelID(r)
 		if err != nil {
+			slog.Error("cannot get labelID", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		templates, err := svc.ListTemplates(labelID)
+		templates, err := svc.ListTemplates(r.Context(), labelID)
 		if err != nil {
+			slog.Error("cannot list templates", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -38,22 +40,25 @@ func showTemplateByIDHandler(svc label.QuerySvc) func(w http.ResponseWriter, r *
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		templateID, err := getTemplateID(r)
 		if err != nil {
+			slog.Error("cannot get templateID", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		labelID, err := getLabelID(r)
 		if err != nil {
+			slog.Error("cannot get labelID", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		pr, err := svc.GetTemplate(labelID, templateID)
+		pr, err := svc.GetTemplate(r.Context(), labelID, templateID)
 		if err != nil {
 			if errors.Is(err, label.ErrNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
+			slog.Error("cannot get template", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -82,13 +87,14 @@ func createTemplateHandler(svc label.CommandSvc) func(w http.ResponseWriter, r *
 		}
 		ct.LabelID = labelID
 
-		pr, err := svc.CreateTemplate(ct)
+		pr, err := svc.CreateTemplate(r.Context(), ct)
 		if err != nil {
 			if errors.Is(err, label.ValidationError) {
+				slog.Error("template validation error", "error", err)
 				w.WriteHeader(http.StatusBadRequest)
-				slog.Warn("template validation error", "error", err)
 				return
 			}
+			slog.Error("cannot create template", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -103,21 +109,24 @@ func deleteTemplateByIDHandler(svc label.CommandSvc) func(w http.ResponseWriter,
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		labelID, err := getLabelID(r)
 		if err != nil {
+			slog.Error("cannot get labelID", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		templateID, err := getTemplateID(r)
 		if err != nil {
+			slog.Error("cannot get templateID", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		if err := svc.DeleteTemplate(labelID, templateID); err != nil {
+		if err := svc.DeleteTemplate(r.Context(), labelID, templateID); err != nil {
 			if errors.Is(err, label.ErrNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
+			slog.Error("cannot delete template", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
