@@ -2,7 +2,9 @@ package printer
 
 import (
 	"context"
+	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -27,6 +29,9 @@ func (repo *PSQL) List(ctx context.Context) ([]Printer, error) {
 	sql := "SELECT id, addr, type, comment FROM printers"
 	rows, err := repo.pool.Query(ctx, sql)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	defer rows.Close()
@@ -46,6 +51,9 @@ func (repo *PSQL) Get(ctx context.Context, id int64) (Printer, error) {
 	row := repo.pool.QueryRow(ctx, sql, id)
 	p := Printer{}
 	if err := row.Scan(&p.ID, &p.Addr, &p.Type, &p.Comment); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Printer{}, ErrNotFound
+		}
 		return Printer{}, err
 	}
 	return p, nil
