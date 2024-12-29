@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"sync"
@@ -24,7 +25,7 @@ func NewMemory() (*Memory, error) {
 	}, nil
 }
 
-func (m *Memory) Store(p *Printer) error {
+func (m *Memory) Store(ctx context.Context, p *Printer) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if p.ID == 0 {
@@ -44,7 +45,7 @@ func (m *Memory) Store(p *Printer) error {
 	return nil
 }
 
-func (m *Memory) List() ([]Printer, error) {
+func (m *Memory) List(ctx context.Context) ([]Printer, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	printers := make([]Printer, 0, len(m.m))
@@ -59,7 +60,7 @@ func (m *Memory) List() ([]Printer, error) {
 	return printers, nil
 }
 
-func (m *Memory) Get(id int64) (Printer, error) {
+func (m *Memory) Get(ctx context.Context, id int64) (Printer, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	data, ok := m.m[id]
@@ -73,7 +74,7 @@ func (m *Memory) Get(id int64) (Printer, error) {
 	return p, nil
 }
 
-func (m *Memory) Delete(id int64) error {
+func (m *Memory) Delete(ctx context.Context, id int64) error {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	if _, ok := m.m[id]; !ok {

@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -10,8 +11,8 @@ import (
 var ValidationError = errors.New("Validation error")
 
 type StorerDeleter interface {
-	Store(*Printer) error
-	Delete(int64) error
+	Store(context.Context, *Printer) error
+	Delete(context.Context, int64) error
 }
 
 type Queue interface {
@@ -39,13 +40,13 @@ func NewCommandSvc(db StorerDeleter, queue Queue) CommandSvc {
 	}
 }
 
-func (svc CommandSvc) Create(cp CreatePrinter) (Printer, error) {
+func (svc CommandSvc) Create(ctx context.Context, cp CreatePrinter) (Printer, error) {
 	if err := svc.validate.Struct(cp); err != nil {
 		return Printer{}, fmt.Errorf("%w: %w", ValidationError, err)
 	}
 	p := New(cp.Type, cp.Addr, cp.Comment)
 
-	if err := svc.db.Store(&p); err != nil {
+	if err := svc.db.Store(ctx, &p); err != nil {
 		return Printer{}, err
 	}
 
@@ -53,6 +54,6 @@ func (svc CommandSvc) Create(cp CreatePrinter) (Printer, error) {
 	return p, nil
 }
 
-func (svc CommandSvc) Delete(printerID int64) error {
-	return svc.db.Delete(printerID)
+func (svc CommandSvc) Delete(ctx context.Context, printerID int64) error {
+	return svc.db.Delete(ctx, printerID)
 }

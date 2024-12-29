@@ -1,14 +1,16 @@
 package printer
 
 import (
+	"context"
 	"errors"
 	"testing"
 )
 
 type TestQueue struct {
-	added int
+	added   int
 	deleted int
 }
+
 func (q *TestQueue) Add(printer Printer) {
 	q.added++
 }
@@ -53,7 +55,7 @@ func TestRegister(t *testing.T) {
 			q := &TestQueue{}
 			svc := NewCommandSvc(repo, q)
 
-			p, err := svc.Create(us.cp)
+			p, err := svc.Create(context.Background(), us.cp)
 			if !errors.Is(err, us.expectedErr) {
 				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
 			}
@@ -84,16 +86,16 @@ func TestDelete(t *testing.T) {
 		Type: "ZPL",
 	}
 
-	if err := repo.Store(printer); err != nil {
+	if err := repo.Store(context.Background(), printer); err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
 
-	if err := svc.Delete(printer.ID); err != nil {
+	if err := svc.Delete(context.Background(), printer.ID); err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
 
-    _, err = repo.Get(printer.ID)
-    if !errors.Is(err, ErrNotFound) {
-        t.Errorf("expected: %v, got: %v\n", ErrNotFound, err)
-    }
+	_, err = repo.Get(context.Background(), printer.ID)
+	if !errors.Is(err, ErrNotFound) {
+		t.Errorf("expected: %v, got: %v\n", ErrNotFound, err)
+	}
 }

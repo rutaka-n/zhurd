@@ -1,6 +1,7 @@
 package printer
 
 import (
+	"context"
 	"errors"
 	"testing"
 )
@@ -16,7 +17,7 @@ func TestGet(t *testing.T) {
 		Type:    "ZPL",
 		Comment: "test printer",
 	}
-	err = repo.Store(printer)
+	err = repo.Store(context.Background(), printer)
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
@@ -52,7 +53,7 @@ func TestGet(t *testing.T) {
 		t.Run(us.desc, func(t *testing.T) {
 			svc := NewQuerySvc(repo)
 
-			p, err := svc.Get(us.printerID)
+			p, err := svc.Get(context.Background(), us.printerID)
 			if !errors.Is(err, us.expectedErr) {
 				t.Errorf("expected: %v, got: %v\n", us.expectedErr, err)
 			}
@@ -79,7 +80,7 @@ func TestList(t *testing.T) {
 	svc := NewQuerySvc(repo)
 
 	// list empty storage
-	result, err := svc.List()
+	result, err := svc.List(context.Background())
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}
@@ -101,14 +102,14 @@ func TestList(t *testing.T) {
 	}
 	for i := range printers {
 		printer := &printers[i]
-		err = repo.Store(printer)
+		err = repo.Store(context.Background(), printer)
 		if err != nil {
 			t.Fatalf("got error: %s\n", err)
 		}
 	}
 
 	// list all printers in storage
-	result, err = svc.List()
+	result, err = svc.List(context.Background())
 	if err != nil {
 		t.Fatalf("got error: %s\n", err)
 	}

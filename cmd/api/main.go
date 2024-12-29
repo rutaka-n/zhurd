@@ -71,7 +71,7 @@ func main() {
 		pooler.Run(ctx)
 	}()
 
-	apiRouter, err := httpapi.New(pooler)
+	apiRouter, err := httpapi.New(dbPool, pooler)
 	if err != nil {
 		panic(err)
 	}

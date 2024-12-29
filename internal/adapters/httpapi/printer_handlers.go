@@ -13,7 +13,7 @@ import (
 func listPrintersHandler(svc printer.QuerySvc) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		printers, err := svc.List()
+		printers, err := svc.List(r.Context())
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -33,7 +33,7 @@ func showPrinterByIDHandler(svc printer.QuerySvc) func(w http.ResponseWriter, r 
 			return
 		}
 
-		pr, err := svc.Get(printerID)
+		pr, err := svc.Get(r.Context(), printerID)
 		if err != nil {
 			if errors.Is(err, printer.ErrNotFound) {
 				w.WriteHeader(http.StatusNotFound)
@@ -58,7 +58,7 @@ func createPrinterHandler(svc printer.CommandSvc) func(w http.ResponseWriter, r 
 			return
 		}
 
-		pr, err := svc.Create(cp)
+		pr, err := svc.Create(r.Context(), cp)
 		if err != nil {
 			if errors.Is(err, printer.ValidationError) {
 				w.WriteHeader(http.StatusBadRequest)
@@ -82,7 +82,7 @@ func deletePrinterByIDHandler(svc printer.CommandSvc) func(w http.ResponseWriter
 			return
 		}
 
-		if err := svc.Delete(printerID); err != nil {
+		if err := svc.Delete(r.Context(), printerID); err != nil {
 			if errors.Is(err, printer.ErrNotFound) {
 				w.WriteHeader(http.StatusNotFound)
 				return

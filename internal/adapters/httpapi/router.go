@@ -6,24 +6,41 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"zhurd/internal/label"
 	"zhurd/internal/printer"
 	pq "zhurd/internal/printingqueue"
+
+	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func New(queue *pq.Pooler) (*mux.Router, error) {
+type printerRepo interface {
+	printer.GetterLister
+	printer.StorerDeleter
+}
+
+func New(dbPool *pgxpool.Pool, queue *pq.Pooler) (*mux.Router, error) {
 	r := mux.NewRouter()
 	r.HandleFunc("/", defaultHandler)
 	v1r := r.PathPrefix("/v1").Subrouter()
 
 	// printer
-	printerRepo, err := printer.NewMemory()
-	if err != nil {
-		return nil, err
+
+	var err error
+	var pRepo printerRepo
+	if dbPool != nil {
+		pRepo, err = printer.NewPSQL(dbPool)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		pRepo, err = printer.NewMemory()
+		if err != nil {
+			return nil, err
+		}
 	}
-	printerCommandSvc := printer.NewCommandSvc(printerRepo, queue)
-	printerQuerySvc := printer.NewQuerySvc(printerRepo)
+	printerCommandSvc := printer.NewCommandSvc(pRepo, queue)
+	printerQuerySvc := printer.NewQuerySvc(pRepo)
 
 	v1r.HandleFunc("/printers", listPrintersHandler(printerQuerySvc)).Methods("GET")
 	v1r.HandleFunc("/printers/{printerID}", showPrinterByIDHandler(printerQuerySvc)).Methods("GET")
