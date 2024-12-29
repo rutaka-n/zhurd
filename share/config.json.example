@@ -1,6 +1,6 @@
 {
   "server": {
-    "addr": "localhost:3003",
+    "addr": "0.0.0.0:3003",
     "graceful_timeout_s": 5,
     "queue_buffer_size": 64,
     "logger": {
@@ -10,7 +10,7 @@
     }
   },
   "database": {
-    "host": "localhost",
+    "host": "db",
     "port": 5432,
     "user": "zhurd",
     "password": "passwordsecretdb",

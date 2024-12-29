@@ -54,7 +54,7 @@ func main() {
 	// database connection
 	var dbPool *pgxpool.Pool
 	if len(cfg.Database.ConnectionString()) > 0 {
-		slog.Info("try connect to database...")
+		slog.Info("try to connect to database...")
 		dbPool, err = pgxpool.New(context.Background(), cfg.Database.ConnectionString())
 		if err != nil {
 			slog.Error("unable to connect to database", "error", err)

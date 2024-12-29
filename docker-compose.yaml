@@ -19,7 +19,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: [ "CMD", "pg_isready --username=zhurd" ]
+      test: pg_isready -h localhost -U $$POSTGRES_USER
       interval: 10s
       timeout: 5s
       retries: 5
