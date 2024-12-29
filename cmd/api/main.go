@@ -62,7 +62,6 @@ func main() {
 		defer dbPool.Close()
 	}
 
-	// TODO: read printer from DB on startup to add queues
 	pooler := pq.NewPooler(cfg.Server.QueueBufferSize)
 	wg := sync.WaitGroup{}
 	wg.Add(1)

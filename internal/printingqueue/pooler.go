@@ -28,8 +28,10 @@ func NewPooler(bufferSize int) *Pooler {
 	}
 }
 
-func (p *Pooler) Add(printer printer.Printer) {
-	p.addCh <- New(printer, p.bufferSize)
+func (p *Pooler) Add(printers ...printer.Printer) {
+	for i := range printers {
+		p.addCh <- New(printers[i], p.bufferSize)
+	}
 }
 
 func (p *Pooler) Delete(id int64) error {

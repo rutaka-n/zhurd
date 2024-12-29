@@ -11,8 +11,8 @@ type TestQueue struct {
 	deleted int
 }
 
-func (q *TestQueue) Add(printer Printer) {
-	q.added++
+func (q *TestQueue) Add(printers ...Printer) {
+	q.added += len(printers)
 }
 func (q *TestQueue) Delete(id int64) error {
 	q.deleted++

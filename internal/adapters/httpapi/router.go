@@ -2,9 +2,11 @@ package httpapi
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"zhurd/internal/label"
 	"zhurd/internal/printer"
@@ -39,6 +41,13 @@ func New(dbPool *pgxpool.Pool, queue *pq.Pooler) (*mux.Router, error) {
 			return nil, err
 		}
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	printers, err := pRepo.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	queue.Add(printers...)
 	printerCommandSvc := printer.NewCommandSvc(pRepo, queue)
 	printerQuerySvc := printer.NewQuerySvc(pRepo)
 

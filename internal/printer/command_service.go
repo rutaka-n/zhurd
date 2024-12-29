@@ -16,7 +16,7 @@ type StorerDeleter interface {
 }
 
 type Queue interface {
-	Add(printer Printer)
+	Add(printers ...Printer)
 	Delete(id int64) error
 }
 
