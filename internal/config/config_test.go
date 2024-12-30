@@ -11,12 +11,12 @@ func TestLoad(t *testing.T) {
   "server": {
     "addr": "localhost:3003",
     "graceful_timeout_s": 5,
-    "queue_buffer_size": 64,
-    "logger": {
-      "destination": "stdout",
-      "format": "json",
-      "level": "info"
-    }
+    "queue_buffer_size": 64
+  },
+  "logger": {
+    "destination": "stdout",
+    "format": "json",
+    "level": "info"
   },
   "database": {
     "host": "localhost",
@@ -42,14 +42,14 @@ func TestLoad(t *testing.T) {
 	if cfg.Server.GracefulTimeoutSec != 5 {
 		t.Errorf("expected %d, got %d\n", 5, cfg.Server.GracefulTimeoutSec)
 	}
-	if cfg.Server.Logger.Destination != "stdout" {
-		t.Errorf("expected %s, got %s\n", "stdout", cfg.Server.Logger.Destination)
+	if cfg.Logger.Destination != "stdout" {
+		t.Errorf("expected %s, got %s\n", "stdout", cfg.Logger.Destination)
 	}
-	if cfg.Server.Logger.Format != "json" {
-		t.Errorf("expected %s, got %s\n", "json", cfg.Server.Logger.Format)
+	if cfg.Logger.Format != "json" {
+		t.Errorf("expected %s, got %s\n", "json", cfg.Logger.Format)
 	}
-	if cfg.Server.Logger.Level != "info" {
-		t.Errorf("expected %s, got %s\n", "info", cfg.Server.Logger.Level)
+	if cfg.Logger.Level != "info" {
+		t.Errorf("expected %s, got %s\n", "info", cfg.Logger.Level)
 	}
 
 	if cfg.Database.Host != "localhost" {

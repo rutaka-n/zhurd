@@ -47,7 +47,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := initLogger(cfg.Server.Logger); err != nil {
+	if err := initLogger(cfg.Logger); err != nil {
 		panic(err)
 	}
 

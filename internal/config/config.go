@@ -16,7 +16,6 @@ type Logger struct {
 // Server contains all configuration for server.
 type Server struct {
 	Addr               string `json:"addr"`
-	Logger             Logger `json:"logger"`
 	GracefulTimeoutSec int    `json:"graceful_timeout_s"`
 	QueueBufferSize    int    `json:"queue_buffer_size"`
 }
@@ -49,6 +48,7 @@ func (cfg *Database) ConnectionString() string {
 // Config is a high-level struct that contains all configuration.
 type Config struct {
 	Server   Server   `json:"server"`
+	Logger   Logger   `json:"logger"`
 	Database Database `json:"database"`
 }
 

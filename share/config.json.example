@@ -2,12 +2,12 @@
   "server": {
     "addr": "0.0.0.0:3003",
     "graceful_timeout_s": 5,
-    "queue_buffer_size": 64,
-    "logger": {
-      "destination": "stdout",
-      "format": "json",
-      "level": "info"
-    }
+    "queue_buffer_size": 64
+  },
+  "logger": {
+    "destination": "stdout",
+    "format": "json",
+    "level": "info"
   },
   "database": {
     "host": "db",
