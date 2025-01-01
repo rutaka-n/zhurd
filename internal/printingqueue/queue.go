@@ -58,7 +58,7 @@ func (q *Queue) Process(ctx context.Context) error {
 		case task := <-q.q:
 			slog.Debug("queue: got task to process", "task", task)
 			if !q.printer.IsConnected() {
-				slog.Debug("printer is not connectied, try to connect", "printerID", q.printer.ID)
+				slog.Debug("printer is not connected, try to connect", "printerID", q.printer.ID)
 				if err := q.printer.Connect(); err != nil {
 					slog.Error("cannot connect to printer", "printerID", q.printer.ID, "addr", q.printer.Addr, "error", err)
 					continue

@@ -32,7 +32,7 @@ func init() {
 }
 
 func main() {
-	// use NotifyContext for gracefull shutdown
+	// use NotifyContext for graceful shutdown
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
@@ -86,7 +86,7 @@ func main() {
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
-		slog.Info("runing server", "addr", cfg.Server.Addr)
+		slog.Info("running server", "addr", cfg.Server.Addr)
 		if err := srv.ListenAndServe(); err != nil {
 			slog.Error("fail to run API server", "error", err)
 		}

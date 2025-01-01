@@ -38,7 +38,7 @@ func (p *Pooler) Delete(id int64) error {
 	p.deleteCh <- id
 	q, ok := p.queues[id]
 	if !ok {
-		slog.Warn("trying to delete queue that does not exist, ingored", "printerID", id)
+		slog.Warn("trying to delete queue that does not exist, ignored", "printerID", id)
 		return nil
 	}
 	delete(p.queues, id)
@@ -75,7 +75,7 @@ func (p *Pooler) Run(ctx context.Context) {
 			slog.Debug("pooler: got command to stop queue", "printerID", id)
 			q, ok := p.queues[id]
 			if !ok {
-				slog.Warn("trying to delete queue that does not exist, ingored", "printerID", id)
+				slog.Warn("trying to delete queue that does not exist, ignored", "printerID", id)
 				continue
 			}
 			delete(p.queues, id)
